@@ -1,4 +1,5 @@
 const com = require('../helpers/communication.js');
+const db = require('../helpers/database.js');
 
 function receivedMessage(event) {
   var senderID = event.sender.id;
@@ -8,19 +9,26 @@ function receivedMessage(event) {
   console.log("Received message for user %d and page %d at %d with message:",
     senderID, timeOfMessage);
 
-  // You may get a text or attachment but not both
-  if (message && message.text) {
+  if (message.text) {
     var messageText = message.text;
     com.sendTextMessage(senderID, messageText);
   }
 }
 
 function receivedPostback(event) {
-  console.log("Received postback!");
+  var senderID = event.sender.id;
+  var recipientID = event.recipient.id;
+  var timeOfPostback = event.timestamp;
+  var payload = event.postback.payload;
+
+  console.log("Received postback for user %d and page %d with payload '%s' " +
+    "at %d", senderID, recipientID, payload, timeOfPostback);
+
+  com.sendTextMessage(senderID, "Postback called");
 }
 
 function receivedMessageRead(event) {
-  console.log("Message has been read.")
+  console.log("Message has been read.");
 }
 
 function respond(req, res) {

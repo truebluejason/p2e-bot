@@ -1,0 +1,16 @@
+User's Wait State Reference
+
+<Default>
+Default: Wait for user to start a conversation (message) or for timer to trigger (poll)
+
+<OPT OUT>
+ReminderQuit: Wait for user to confirm his / her decision (postback)
+
+<REMINDER WORKFLOW>
+ReminderSent: Wait for user to confirm his / her action (postback) or for reminder to time out (poll)
+a) DoneOptions: Wait for user to choose between virtue and hindrance (postback)
+   1) OptionVirtue: Wait for user to choose a virtue (postback)
+   2) OptionHindrance: Wait for user to choose a hindrance (postback)
+   DonePlan: Wait for user to submit action plan (message)
+b) NotDoneReason: Wait for user to choose a reason (postback)
+   NotDonePlan: Wait for user to submit an action plan (message)
