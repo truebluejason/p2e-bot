@@ -1,5 +1,6 @@
 {
 	"appSecret": "b8c73a83acd93c87a59b98b2225ea661",
+	"databaseUp": "false",
     "pageAccessToken": "EAAF2hMVhPjoBAOTZBOF2dWcRMlvg0ZBlCd0GzA2TNqVEMPUvQSv95WuWlwH5Vtclt6j2P0asUkb4GzgVrRV4HOZAOtkG0R3gyZCXHhZC3lNmqB5vbP3OtlQDWirOAUkZBNEIzYiufwIJFhr68MTZBv3eLu8tX0ByTZAnaXyNV6yGqgZDZD",
     "port": "3000",
     "serverURL": "to_be_set_manually",

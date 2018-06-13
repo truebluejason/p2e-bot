@@ -1,7 +1,12 @@
 module.exports = {
-	getUserState: getUserState,
+	getWaitState: getWaitState,
+	setWaitState: setWaitState,
 }
 
-function getUserState(uid) {
+function getWaitState(userID) {
 	return 'STATE';
+}
+
+function setWaitState(userID, nextState) {
+	return 'DONE';
 }

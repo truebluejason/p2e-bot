@@ -1,5 +1,6 @@
 const com = require('../helpers/communication.js');
 const db = require('../helpers/database.js');
+const user = require('../handlers/user.js');
 
 function receivedMessage(event) {
   var senderID = event.sender.id;
@@ -11,7 +12,8 @@ function receivedMessage(event) {
 
   if (message.text) {
     var messageText = message.text;
-    com.sendTextMessage(senderID, messageText);
+    user.evalMessage(senderID, messageText);
+    // com.sendTextMessage(senderID, messageText);
   }
 }
 
@@ -24,7 +26,7 @@ function receivedPostback(event) {
   console.log("Received postback for user %d and page %d with payload '%s' " +
     "at %d", senderID, recipientID, payload, timeOfPostback);
 
-  com.sendTextMessage(senderID, "Postback called");
+  // com.sendTextMessage(senderID, "Postback called");
 }
 
 function receivedMessageRead(event) {
