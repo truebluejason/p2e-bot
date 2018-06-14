@@ -8,12 +8,21 @@ const cache = require('../helpers/cache.js');
 const com = require('../helpers/communication.js');
 const db = require('../helpers/db.js');
 
-// Receive message or postback calls send function
-// Treat default state specially?
+
+// Workflow
+//  1. User or Poller hits an endpoint.
+//  2. Bot retrieves user state from cache or database.
+//  3. Bot determines which sequence user should undergo through evaluating check functions of all sequences permitted by user state.
+//   - Only evaluate check functions when user state is Default - else map state to sequence one to one.
+//  4. Bot triggers the sequence for user.
+
+// Definition
+//  Sequence: Bot sending the user a message and optionally waiting then processing a single user response.
+//  Default state means the bot shouldn't expect a reply from the user.
+//  Any other state means the bot should expect a reply from the user.
 
 const SEQUENCES = {
   help: {
-    permittedStates: "All",
     check: checkHelp, // User asks for help and passes check - State is default so eval send function
     send: sendHelp, // Bot sends user help and doesn't expect a reply
     newState: "Default",
@@ -39,97 +48,51 @@ const SEQUENCES = {
     send: sendVirtues, // Bot tells user to choose from virtue list
     newState: "SelectingVirtues", // While waiting, user state is SelectingVirtues
     afterWait: analyzeVirtues, // Bot saves 'choice' and eval checks for nextActions - State not default so don't eval current send
-    nextActions: [ "nextPlan" ] // Upon being selected, eval nextAction's send function
+    nextActions: [ "createPlan" ] // Upon being selected, eval nextAction's send function
   }
-  nextPlan: {
-    check: checkNextPlan,
-    send: sendNextPlan, // Bot tells user to write plan
+  createPlan: {
+    check: checkCreatePlan,
+    send: sendCreatePlan, // Bot tells user to write plan
     newState: "CreatingPlan", // While waiting, user state is CreatingPlan
-    afterWait: analyzeNextPlan, // Bot saves 'entry' and eval checks for nextActions - State not default so don't eval current send
-    nextAction: null // Upon not being selected, revert state to "Default"
+    afterWait: analyzeCreatePlan, // Bot saves 'entry' and eval checks for nextActions - State not default so don't eval current send
+    nextAction: [ "goodJob" ] // Upon being selected, eval nextAction's send function
   }
-}
-
-const ACTIONS = {
-  help: {
-    noNextAction: 'yes', // Trigger respondHandler
-    entryStates: 'all',
-    check: checkHelp, // Payload is "HELP" <ASSUMES STATE IS CORRECT>
-    respondHandler: respondHelp, // Send: "HERE ARE SOME THINGS YOU CAN DO"
-    stateStartingNow: "Default", // State between sender and respondHandler trigger delay
-    stateTransitioner: null,
-    nextActions: null,
-  },
-  setReminder: {
-    entryStates: 'all', 
-    check: checkSetReminder, // Message NLP Processed is "Set reminder at time..."
-    stateStartingNow: "Default",
-    respondHandler: respondSetReminder, // Send: "REMINDER FOR 8:15AM SET"
-    stateTransitioner: null,
-    nextActions: null,
-  },
-  remind: {
-    noNextAction: 'no', // Once entered through STATE, skip respondHandler !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    entryStates: 'all',
-    check: checkSetReminder, // Is Poll and current time matches user's time
-    respondHandler: handleRemind, // Send: "TIME TO MEDITATE!"
-    stateStartingNow: "ReceivingReminder",
-    stateTransitioner: transitionRemind, // "Check if Done or Timeout" - selects next action based on nextActions and checks of those next actions
-    nextActions: [options, notDoneReason],
-  },
-  options: {
-    calledByAction: 'yes', // Trigger respondHandler
-    entryStates: 'ReceivingReminder',
-    check: checkOptions,
-    respondHandler: handleOptions, // "Virtue or Hindrance?"
-    stateStartingNow: "SelectingOptions",
-    stateTransitioner: transitionOptions,
-    nextActions: [virtues, hindrances] // "Check if Virtue or Hindrance"
-  },
-  notDoneReason: {
-    entryStates: 'ReceivingReminder',
-    sender: sendNotDoneReason, // "Why didn't you do it"
-    stateStartingNow: "WhyLazy",
-    respondHandler: handleNotDoneReason // "Log user reason"
+  goodJob: {
+    check: checkGoodJob,
+    send: sendGoodJob, // Bot tells user good job
+    newState: "Default",
+    afterWait: null,
+    nextAction: null
   }
 }
 
 const STATES = {
   Default: {
-    // potentialActions: help, setReminder, quitReminder, reminderSent...
-    // potentialActionsCheck: helpCheck, setReminderCheck, ...
-    // respHandlers: helpHandler, setReminderHandler...
-
+    allowedSeqs: [ "help", "remind", "remindCancel", "remindSet" ]
   },
-  ReminderSent: {
-    description: "Wait for user to perform an action (postback) or for reminder to time out (poll)",
-    handler: handlerReminderSent, // "trigger: {text: "meditation time", content: {quickReply}}"
-    nextStates: [
-      { waitState: "DoneOptions", type: "postback" }, // text: "Choose between virtue and hindrance"
-      { waitState: "NotDoneReason", type: "message" } // text: "Why didn't you do it"
-    ],
-    error: { handler: handlerError, waitState: "Default" }
+  ReceivingReminder: {
+    allowedSeqs: [ "remind" ]
   },
-  DoneOptions: {
-
+  SelectingOptions: {
+    allowedSeqs: [ "options" ]
   },
-  DoneVirtue: {
-
+  SelectingVirtues: {
+    allowedSeqs: [ "virtues" ]
   },
-  DoneHindrance: {
-
+  SelectingHindrances: {
+    allowedSeqs: [ "hindrances" ]
   },
-  DonePlan: {
-
+  CreatingPlan: {
+    allowedSeqs: [ "createPlan" ]
   },
   NotDoneReason: {
-
+    allowedSeqs: [ "notDoneReason" ]
   },
-  NotDonePlan: {
-
+  CreatingRemedy: {
+    allowedSeqs: [ "createRemedy" ]
   },
-  ReminderQuit: {
-
+  QuittingReminder: {
+    allowedSeqs: [ "quit" ]
   }
 };
 
