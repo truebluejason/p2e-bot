@@ -96,6 +96,24 @@ const STATES = {
   }
 };
 
+// Upon server starting, create an object that maps states to sequence
+function mapStateToSequence(stateSequenceMap) {
+  Object.keys(SEQUENCES).each(key => {
+    let seqName = key;
+    let state = SEQUENCES[seqName]['newState'];
+    if (state != "Default") {
+      stateSequenceMap[state] =seqName;
+    } else {
+      
+    }
+  });
+}
+
+// Maps states to sequence
+function stateToSequence(userID, currState) {
+
+}
+
 function updateWaitState(userID, userResp, currState) {
   let handler, nextState, handlerError;
 
