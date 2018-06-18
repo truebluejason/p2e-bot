@@ -22,139 +22,123 @@ const db = require('../helpers/db.js');
 //  Any other state means the bot should expect a reply from the user.
 
 const SEQUENCES = {
-  help: {
+  Help: {
     check: checkHelp, // User asks for help and passes check - State is default so eval send function
     send: sendHelp, // Bot sends user help and doesn't expect a reply
-    newState: "Default",
+    isBeginning: true,
+    expectReply: false,
     afterWait: null,
-    nextActions: null
+    nextSeqs: null
   },
-  remind: {
+  Remind: {
     check: checkRemind, // Poll update = State is default so eval send function
     send: sendRemind, // Bot sends user reminder and expects a reply
-    newState: "ReceivingReminder", // While waiting, user state is ReceivingReminder
-    afterWait: analyzeRemind, // Bot saves 'Done' or 'NotDone' status and eval checks for nextActions - State not default so don't eval current send
-    nextActions: [ "options", "notDoneReason" ] // Upon being selected, eval nextAction's send function
+    isBeginning: true,
+    expectReply: true,
+    afterWait: analyzeRemind, // Bot saves 'Done' or 'NotDone' status and eval checks for nextSeqs - State not default so don't eval current send
+    nextSeqs: [ "Options", "NotDoneReason" ] // Upon being selected, eval nextSeq's send function
   },
-  options: {
+  Options: {
     check: checkOptions,
     send: sendOptions, // Bot tells user to choose between virtues and hindrances
-    newState: "SelectingOptions", // While waiting, user state is SelectingOptions
-    afterWait: analyzeOptions, // Bot saves 'choice' and eval checks for nextActions - State not default so don't eval current send
-    nextActions: [ "virtues", "hindrances" ] // Upon being selected, eval nextAction's send function
+    isBeginning: false,
+    expectReply: true,
+    afterWait: analyzeOptions, // Bot saves 'choice' and eval checks for nextSeqs - State not default so don't eval current send
+    nextSeqs: [ "Virtues", "Hindrances" ] // Upon being selected, eval nextSeq's send function
   },
-  virtues: {
+  Virtues: {
     check: checkVirtues,
     send: sendVirtues, // Bot tells user to choose from virtue list
-    newState: "SelectingVirtues", // While waiting, user state is SelectingVirtues
-    afterWait: analyzeVirtues, // Bot saves 'choice' and eval checks for nextActions - State not default so don't eval current send
-    nextActions: [ "createPlan" ] // Upon being selected, eval nextAction's send function
-  }
-  createPlan: {
+    isBeginning: false,
+    expectReply: true,
+    afterWait: analyzeVirtues, // Bot saves 'choice' and eval checks for nextSeqs - State not default so don't eval current send
+    nextSeqs: [ "CreatePlan" ] // Upon being selected, eval nextSeq's send function
+  },
+  Hindrances: {
+    check: checkHindrances,
+    send: sendHindrances, // Bot tells user to choose from virtue list
+    isBeginning: false,
+    expectReply: true,
+    afterWait: analyzeHindrances, // Bot saves 'choice' and eval checks for nextSeqs - State not default so don't eval current send
+    nextSeqs: [ "CreatePlan" ] // Upon being selected, eval nextSeq's send function
+  },
+  CreatePlan: {
     check: checkCreatePlan,
     send: sendCreatePlan, // Bot tells user to write plan
-    newState: "CreatingPlan", // While waiting, user state is CreatingPlan
-    afterWait: analyzeCreatePlan, // Bot saves 'entry' and eval checks for nextActions - State not default so don't eval current send
-    nextAction: [ "goodJob" ] // Upon being selected, eval nextAction's send function
-  }
-  goodJob: {
+    isBeginning: false,
+    expectReply: true,
+    afterWait: analyzeCreatePlan, // Bot saves 'entry' and eval checks for nextSeqs - State not default so don't eval current send
+    nextSeqs: [ "GoodJob" ] // Upon being selected, eval nextSeq's send function
+  },
+  GoodJob: {
     check: checkGoodJob,
     send: sendGoodJob, // Bot tells user good job
-    newState: "Default",
+    isBeginning: false,
+    expectReply: false,
     afterWait: null,
-    nextAction: null
-  }
+    nextSeqs: null
+  },
+  
+
 }
 
-const STATES = {
-  Default: {
-    allowedSeqs: [ "help", "remind", "remindCancel", "remindSet" ]
-  },
-  ReceivingReminder: {
-    allowedSeqs: [ "remind" ]
-  },
-  SelectingOptions: {
-    allowedSeqs: [ "options" ]
-  },
-  SelectingVirtues: {
-    allowedSeqs: [ "virtues" ]
-  },
-  SelectingHindrances: {
-    allowedSeqs: [ "hindrances" ]
-  },
-  CreatingPlan: {
-    allowedSeqs: [ "createPlan" ]
-  },
-  NotDoneReason: {
-    allowedSeqs: [ "notDoneReason" ]
-  },
-  CreatingRemedy: {
-    allowedSeqs: [ "createRemedy" ]
-  },
-  QuittingReminder: {
-    allowedSeqs: [ "quit" ]
-  }
-};
+/*
+check function: (userResp, seqName) => boolean
+send function: (userID, userResp, seqName) => boolean - if userResp is null, don't bother analyzing
+afterWait function: (userID, userResp, seqName) => boolean
+*/
 
-// Upon server starting, create an object that maps states to sequence
-function mapStateToSequence(stateSequenceMap) {
-  Object.keys(SEQUENCES).each(key => {
-    let seqName = key;
-    let state = SEQUENCES[seqName]['newState'];
-    if (state != "Default") {
-      stateSequenceMap[state] =seqName;
-    } else {
-      
+const BEGINNING_SEQS = getBeginningSeqs();
+
+// Upon server starting, return an array of beginning sequence keys (sequences that start from default)
+function getBeginningSeqs() {
+  return Object.keys(SEQUENCES).filter(seqName => !!SEQUENCES[seqName]['isBeginning']);
+}
+
+function handleSequence(userID, userResp, currState) {
+  if (currState === 'Default') {
+    let seqName = BEGINNING_SEQS.filter(seqName => callCheck(seqName, userResp))[0];
+    if (seqName === undefined) {
+      handleError(userID, 'Check', new Error('No matching check function for user response.'));
+      return;
     }
-  });
-}
-
-// Maps states to sequence
-function stateToSequence(userID, currState) {
-
-}
-
-function updateWaitState(userID, userResp, currState) {
-  let handler, nextState, handlerError;
-
-  try {
-
-    handler = STATES[currState]['handler'];
-    handler(userID, userResp);
-    nextState = evalNextState(userResp, currState);
-
-  } catch(error) {
-
-    handlerError = STATES[currState]['error']['handler'];
-    handlerError(userID, error.message);
-    nextState = STATES[currState]['error']['waitState'];
-
-  }
-
-  setWaitState(userID, nextState);
-}
-
-function handlerGeneral(userID, userResp) {
-
-}
-
-function handlerReminderSent(userID, done) {
-  if (done) {
-    console.log('Done');
-    setWaitState(userID, STATES["DoneOptions"]);
+    callSend(userID, userResp, seqName);
   } else {
-    console.log('NotDone');
-    setWaitState(userID, STATES["NotDoneReason"]);
+    callAfterWait(userID, userResp, currState);
   }
 }
 
-function handlerError(userID, reason = '') {
+function callCheck(userResp, seqName) {
+  return SEQUENCES[seqName]['check'](userResp);
+}
+
+function callSend(userID, userResp, seqName) {
+  let error = SEQUENCES[seqName]['send'](userID, userResp);
+  if (error !== null) {
+    handleError(userID, 'Send', error);
+    return;
+  }
+  setWaitState(userID, seqName);
+}
+
+function callAfterWait(userID, userResp, seqName) {
+  let sequence = SEQUENCES[seqName];
+  let nextSeqs = sequence['nextSeqs'];
+  let {nextSeqName, error} = sequence['afterWait'](userID, nextSeqs);
+  if (error !== null) {
+    handleError(userID, 'AfterWait', error);
+    return;
+  }
+  callSend(userID, null, nextSeqName);
+}
+
+function handleError(userID, errorType, error) {
   com.sendTextMessage(userID, "I don't understand.");
-  console.log(`[Error: State] related to userID: ${userID}`);
-  if (reason != '') {
+  console.log(`[Error: ${errorType}] related to userID: ${userID}`);
+  if (reason !== '') {
     console.log(`- Reason: ${reason}`);
   }
-  setWaitState(userID, "Default");
+  setWaitState(userID, 'Default');
 }
 
 function setWaitState(userID, nextState) {
@@ -163,18 +147,12 @@ function setWaitState(userID, nextState) {
     if (!nextState) {
       throw new Error("setWaitState method's nextState field is undefined.");
     }
-    cache.setWaitState(userID, nextState);
+    // use Cache here?
     db.setWaitState(userID, nextState);
 
   } catch(error) {
     // Record analytics here?
-    console.log(`[Error: State] related to userID: ${userID}`);
+    console.log(`[Error: StateSet] related to userID: ${userID}`);
     console.log(`- Reason: ${error.message}`);
   }
-}
-
-function evalNextState(userResp, currState) {
-  nextStates = STATES[currState]['nextStates'];
-  nextState = nextStates.find(obj => obj['waitState'] === userResp);
-  return nextState['waitState'];
 }
