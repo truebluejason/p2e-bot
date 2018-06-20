@@ -6,11 +6,13 @@ const
   express = require('express');
 
 const
-  gateway = require('./src/controllers/gateway.js'),
-  verification = require('./src/controllers/verification.js');
+  gateway = require('./src/controllers/gateway'),
+  sequence = require('./src/controllers/sequence'),
+  verification = require('./src/controllers/verification');
 
 const
   app = express(),
+  beginningSeqs = sequence.getBeginningSeqs(),
   port = config.get('port');
 
 app.use(bodyParser.json());
