@@ -10,15 +10,15 @@ module.exports = {
 function evalMessage(userID, message) {
 	let userState = db.getWaitState(userID);
 	// Strip to barebone message content
-	message = message;
+	console.log(`Message ${message} received.`);
 	seq.handleSequence(userID, message, userState);
 }
 
 function evalPostback(userID, payload) {
 	let userState = db.getWaitState(userID);
 	// Strip to barebone postback content
-	postback = postback;
-	seq.handleSequence(userID, postback, userState);
+	console.log(`Payload ${payload} received.`);
+	seq.handleSequence(userID, payload, userState);
 }
 
 function evalPoll(userID) {

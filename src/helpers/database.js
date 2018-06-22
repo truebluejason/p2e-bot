@@ -4,9 +4,9 @@ module.exports = {
 }
 
 function getWaitState(userID) {
-	return 'STATE';
+	return 'Default';
 }
 
 function setWaitState(userID, nextState) {
-	return 'DONE';
+	return 'Default';
 }

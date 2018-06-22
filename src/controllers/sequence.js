@@ -6,7 +6,7 @@ module.exports = {
 
 // const cache = require('../helpers/cache.js');
 const com = require('../helpers/communication.js');
-const db = require('../helpers/db.js');
+const db = require('../helpers/database.js');
 const handlers = require('../handlers');
 
 /*
@@ -42,6 +42,7 @@ const SEQUENCES = {
     check: handlers.remindSet.check,
     send: handlers.remindSet.send
   },
+  /*
   RemindQuit: {
     check: handlers.remindQuit.check,
     send: handlers.remindQuit.send,
@@ -90,6 +91,7 @@ const SEQUENCES = {
   GoodJob: {
     send: handlers.goodJob.send
   }
+  */
 }
 
 /*
@@ -104,6 +106,7 @@ function getBeginningSeqs() {
 }
 
 function handleSequence(userID, userResp, currState) {
+  let beginningSeqs = getBeginningSeqs();
   if (currState === 'Default') {
     let seqName = beginningSeqs.filter(seqName => callCheck(userResp, seqName))[0];
     if (seqName === undefined) {
@@ -117,6 +120,7 @@ function handleSequence(userID, userResp, currState) {
 }
 
 function callCheck(userResp, seqName) {
+  //console.log(`Calling check for ${seqName}: User Response is ${userResp}`);
   return SEQUENCES[seqName]['check'](userResp);
 }
 
@@ -143,14 +147,18 @@ function callAnalyze(userID, userResp, seqName) {
 // What to do if user's state isn't default?
 // - Likely save task as not done and revert everything to default
 function handlePollInterrupt(userID, currState) {
-
+  if (currState === 'Remind') {
+    handleSequence(userID, 'poll', 'Remind');
+  } else {
+    handleSequence(userID, 'poll', 'Default');
+  }
 }
 
 function handleError(userID, errorType, error) {
   com.sendTextMessage(userID, "I don't understand.");
   console.log(`[Error: ${errorType}] related to userID: ${userID}`);
-  if (reason !== '') {
-    console.log(`- Reason: ${reason}`);
+  if (error.message !== '') {
+    console.log(`- Reason: ${error.message}`);
   }
   setWaitState(userID, 'Default');
 }

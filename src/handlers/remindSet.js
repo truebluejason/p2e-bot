@@ -6,11 +6,11 @@ module.exports = {
 const com = require('../helpers/communication.js');
 
 function check(userResp) {
-	return userResp.match('.*help.*');
+	return userResp.match('.*remind me.*');
 }
 
 function send(userID, userResp) {
-	com.sendTextMessage(userID, 'Hello, I am p2e-bot.');
+	com.sendTextMessage(userID, 'Let us just say that the reminder has been set.');
 	return null;
 }
 

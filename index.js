@@ -7,12 +7,10 @@ const
 
 const
   gateway = require('./src/controllers/gateway'),
-  sequence = require('./src/controllers/sequence'),
   verification = require('./src/controllers/verification');
 
 const
   app = express(),
-  beginningSeqs = sequence.getBeginningSeqs(),
   port = config.get('port');
 
 app.use(bodyParser.json());
