@@ -10,10 +10,14 @@ function check(userResp) {
 }
 
 function send(userID, userResp) {
-	com.sendTextMessage(userID, 'Hello, I am p2e-bot.');
+	let explain = "I assist your meditation by reminding you to practice and reflect on your progress.\n\n" + 
+				"You can get started by scheduling daily reminder(s) as shown below.\n\n" + 
+				"Thanks for checking me out!\n\n";
+	com.sendTextMessage(userID, explain);
+	let
+		intro = 'Here are some things you can tell me to do.',
+		info = userResp.reduce((res, desc) => res + "\n\n" + desc);
+		outro = 'I may try to guess what you mean if I do not fully understand it.';
+	com.sendTextMessage(userID, `${intro}\n\n${info}\n\n${outro}`);
 	return null;
-}
-
-function analyze(userID, userResp, nextSeqs) {
-	return { nextSeqName: 'help', error: null };
 }

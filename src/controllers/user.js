@@ -10,7 +10,7 @@ module.exports = {
 function evalMessage(userID, message) {
 	let userState = db.getWaitState(userID);
 	// Strip to barebone message content
-	console.log(`Message ${message} received.`);
+	console.log(`Message / Payload ${message} received.`);
 	seq.handleSequence(userID, message, userState);
 }
 

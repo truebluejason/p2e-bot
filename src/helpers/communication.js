@@ -54,7 +54,7 @@ function sendTextMessage(recipientId, messageText) {
 }
 */
 function sendButtonMessage(recipientId, buttonText, buttonObject) {
-  buttonArray = Object.keys(buttonObject).map(key => {
+  var buttonArray = Object.keys(buttonObject).map(key => {
     return {
       type: "postback",
       title: key,
@@ -87,7 +87,7 @@ function sendButtonMessage(recipientId, buttonText, buttonObject) {
 }
 */
 function sendQuickReply(recipientId, replyText, replyObject) {
-  replyArray = Object.keys(replyObject).map(key => {
+  var replyArray = Object.keys(replyObject).map(key => {
     return {
       "content_type": "text",
       "title": key,

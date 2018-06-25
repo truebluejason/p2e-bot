@@ -35,23 +35,34 @@ Sequences Template
 
 const SEQUENCES = {
   Help: {
+    desc: "*help*: Describe things you can tell me to do.",
     check: handlers.help.check,
     send: handlers.help.send
   },
+  RemindGet: {
+    desc: "*get reminders*: Get your previously set reminders.",
+    check: handlers.remindGet.check,
+    send: handlers.remindGet.send
+  },
   RemindSet: {
+    desc: "*remind me at <TIME>*: Schedule a daily reminder between 0:00 - 23:59.\n- _Example_: 'remind me at 21:30'",
     check: handlers.remindSet.check,
     send: handlers.remindSet.send
   },
-  /*
   RemindQuit: {
+    desc: "*delete all reminders*: Delete all previously set reminders.",
     check: handlers.remindQuit.check,
     send: handlers.remindQuit.send,
     analyze: handlers.remindQuit.analyze,
-    nextSeqs: [ "Quitted" ]
+    nextSeqs: [ "Quitted", "NotQuitted" ]
   },
   Quitted: {
     send: handlers.quitted.send
   },
+  NotQuitted: {
+    send: handlers.notQuitted.send
+  },
+  /*
   Remind: {
     check: handlers.remind.check,
     send: handlers.remind.send,
@@ -105,17 +116,32 @@ function getBeginningSeqs() {
   return Object.keys(SEQUENCES).filter(seqName => !!SEQUENCES[seqName]['check']);
 }
 
-function handleSequence(userID, userResp, currState) {
-  let beginningSeqs = getBeginningSeqs();
-  if (currState === 'Default') {
-    let seqName = beginningSeqs.filter(seqName => callCheck(userResp, seqName))[0];
-    if (seqName === undefined) {
-      handleError(userID, 'Check', new Error('No matching check function for user response.'));
-      return;
+function describeSeqs() {
+  const descriptions = [];
+  Object.keys(SEQUENCES).forEach(seqName => {
+    let desc = SEQUENCES[seqName]['desc'];
+    if (desc) {
+      descriptions.push(desc);
     }
-    callSend(userID, userResp, seqName);
-  } else {
-    callAnalyze(userID, userResp, currState);
+  });
+  return descriptions;
+}
+
+function handleSequence(userID, userResp, currState) {
+  try {
+    let beginningSeqs = getBeginningSeqs();
+    if (currState === 'Default') {
+      let seqName = beginningSeqs.filter(seqName => callCheck(userResp, seqName))[0];
+      if (seqName === undefined) {
+        handleError(userID, 'Check', new Error('No matching check function for user response.'));
+        return;
+      }
+      callSend(userID, userResp, seqName);
+    } else {
+      callAnalyze(userID, userResp, currState);
+    }
+  } catch(error) {
+    console.log(`[Error: UNKNOWN] with message ${error.message} caught at top level.`);
   }
 }
 
@@ -125,12 +151,21 @@ function callCheck(userResp, seqName) {
 }
 
 function callSend(userID, userResp, seqName) {
+  let nextState = SEQUENCES[seqName]['analyze'] ? seqName : 'Default'
+  setWaitState(userID, nextState);
+
+  // hack that injects sequence description for help
+  if (seqName === 'Help') {
+    userResp = describeSeqs();
+    console.log('USERRESP IS')
+    console.log(userResp);
+  }
+
   let error = SEQUENCES[seqName]['send'](userID, userResp);
   if (error !== null) {
     handleError(userID, 'Send', error);
     return;
   }
-  setWaitState(userID, seqName);
 }
 
 function callAnalyze(userID, userResp, seqName) {
@@ -141,7 +176,9 @@ function callAnalyze(userID, userResp, seqName) {
     handleError(userID, 'Analyze', error);
     return;
   }
-  callSend(userID, null, nextSeqName);
+  if (nextSeqName) {
+    callSend(userID, null, nextSeqName);
+  }
 }
 
 // What to do if user's state isn't default?
@@ -155,7 +192,8 @@ function handlePollInterrupt(userID, currState) {
 }
 
 function handleError(userID, errorType, error) {
-  com.sendTextMessage(userID, "I don't understand.");
+  com.sendTextMessage(userID, "I'm afraid I don't understand.");
+  callSend(userID, null, 'Help');
   console.log(`[Error: ${errorType}] related to userID: ${userID}`);
   if (error.message !== '') {
     console.log(`- Reason: ${error.message}`);

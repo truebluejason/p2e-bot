@@ -6,13 +6,20 @@ function receivedMessage(event) {
   var senderID = event.sender.id;
   var timeOfMessage = event.timestamp;
   var message = event.message;
+  var messageText;
 
   //console.log("Received message for user %d and page %d at %d with message:", senderID, timeOfMessage);
 
   if (message.text) {
-    var messageText = message.text;
+    messageText = message.text;
     user.evalMessage(senderID, messageText);
   }
+  /* IN CASE YOU NEED QUICK_REPLY PAYLOAD
+  if (message.quick_reply) {
+    messageText = message.quick_reply.payload;
+    user.evalMessage(senderID, messageText);
+  }
+  */
 }
 
 function receivedPostback(event) {

@@ -4,13 +4,24 @@ module.exports = {
 }
 
 const com = require('../helpers/communication.js');
+const db = require('../helpers/database.js');
+const misc = require('../helpers/misc.js');
 
 function check(userResp) {
-	return userResp.match('.*remind me.*');
+	return userResp.match(/.*remind me.*/i) || userResp.match(/.*set reminder.*/i);
 }
 
 function send(userID, userResp) {
-	com.sendTextMessage(userID, 'Let us just say that the reminder has been set.');
+	let { times, error } = misc.extractTimes(userResp);
+	if (error) {
+		return error;
+	}
+	timesArray = times;
+	error = db.reminderSet(userID, timesArray);
+	if (error) {
+		return error;
+	}
+	com.sendTextMessage(userID, `Reminder set at ${timesArray.reduce((resp, time) => resp + ' ' + time)}`);
 	return null;
 }
 
