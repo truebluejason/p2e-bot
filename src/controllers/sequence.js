@@ -157,8 +157,6 @@ function callSend(userID, userResp, seqName) {
   // hack that injects sequence description for help
   if (seqName === 'Help') {
     userResp = describeSeqs();
-    console.log('USERRESP IS')
-    console.log(userResp);
   }
 
   let error = SEQUENCES[seqName]['send'](userID, userResp);

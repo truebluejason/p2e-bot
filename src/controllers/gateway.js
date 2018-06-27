@@ -42,17 +42,19 @@ function respond(req, res) {
   const data = req.body;
   if (data.object === 'page') {
     console.log(JSON.stringify(data.entry));
-    data.entry.forEach(pageEntry => {
-      pageEntry.messaging.forEach(msgEvent => {
-        if (msgEvent.message) {
-          receivedMessage(msgEvent);
-        } else if (msgEvent.postback) {
-          receivedPostback(msgEvent);
-        } else if (msgEvent.read) {
-          receivedMessageRead(msgEvent);
-        }
+    if (data.entry) {
+      data.entry.forEach(pageEntry => {
+        pageEntry.messaging.forEach(msgEvent => {
+          if (msgEvent.message) {
+            receivedMessage(msgEvent);
+          } else if (msgEvent.postback) {
+            receivedPostback(msgEvent);
+          } else if (msgEvent.read) {
+            receivedMessageRead(msgEvent);
+          }
+        });
       });
-    });
+    }
     res.status(200).send('Event received');
   }
 };

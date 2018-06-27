@@ -8,30 +8,53 @@ module.exports = {
 
 const config = require('config');
 const request = require('request');
+const { promisify } = require('util');
 
-function callSendAPI(messageData) {
-  request({
-    uri: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: { access_token: config.get('pageAccessToken') },
-    method: 'POST',
-    json: messageData
+const requestPromise = promisify(request);
 
-  }, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      var recipientId = body.recipient_id;
-      var messageId = body.message_id;
+const userQueues = {};
 
-      if (messageId) {
-        console.log("Successfully sent message with id %s to recipient %s",
-          messageId, recipientId);
+// Sends messages to a user in order - one user should only have one syncSendAPI process
+function syncSendAPI(recipientId) {
+  let userQueue = userQueues[recipientId];
+  if (userQueue['messageQueue'].length && userQueue['isIdle']) {
+    userQueue['isIdle'] = false;
+
+    let messageData = userQueue['messageQueue'].shift();
+    let payload = {
+        uri: 'https://graph.facebook.com/v2.6/me/messages',
+        qs: { access_token: config.get('pageAccessToken') },
+        method: 'POST',
+        json: messageData
+    };
+
+    requestPromise(payload).then(res => {
+      if (res.statusCode == 200) {
+        let recipientId = res.body ? res.body.recipient_id : '';
+        console.log("Successfully sent message to recipient %s", recipientId);
       } else {
-      console.log("Successfully called Send API for recipient %s",
-        recipientId);
+        throw new Error('Failed calling Send API.');
       }
-    } else {
-      console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
-    }
-  });
+    }).catch(error => {
+      console.log(`[Error: Send] with message: ${error.message}`);
+    }).then(res => {
+      userQueue['isIdle'] = true;
+      syncSendAPI(recipientId);
+    }).catch(error => {
+      return;
+    });
+  }
+}
+
+function queueOps(recipientId, messageData) {
+  if (!userQueues[recipientId]) {
+    userQueues[recipientId] = {
+      messageQueue: [],
+      isIdle: true
+    };
+  }
+  userQueues[recipientId]['messageQueue'].push(messageData);
+  syncSendAPI(recipientId);
 }
 
 function sendTextMessage(recipientId, messageText) {
@@ -44,7 +67,7 @@ function sendTextMessage(recipientId, messageText) {
     }
   };
 
-  callSendAPI(messageData);
+  queueOps(recipientId, messageData);
 }
 
 /* Input Format
@@ -77,7 +100,7 @@ function sendButtonMessage(recipientId, buttonText, buttonObject) {
     }
   };
 
-  callSendAPI(messageData);
+  queueOps(recipientId, messageData);
 }
 
 /* Input Format
@@ -104,7 +127,7 @@ function sendQuickReply(recipientId, replyText, replyObject) {
     }
   };
 
-  callSendAPI(messageData);
+  queueOps(recipientId, messageData);
 }
 
 function sendImageMessage(recipientId) {
@@ -122,7 +145,7 @@ function sendImageMessage(recipientId) {
     }
   };
 
-  callSendAPI(messageData);
+  queueOps(recipientId, messageData);
 }
 
 function sendPtoEButton(recipientId) {
@@ -146,5 +169,5 @@ function sendPtoEButton(recipientId) {
     }
   };
 
-  callSendAPI(messageData);
+  queueOps(recipientId, messageData);
 }
