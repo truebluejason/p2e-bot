@@ -62,7 +62,6 @@ const SEQUENCES = {
   NotQuitted: {
     send: handlers.notQuitted.send
   },
-  /*
   Remind: {
     check: handlers.remind.check,
     send: handlers.remind.send,
@@ -102,7 +101,6 @@ const SEQUENCES = {
   GoodJob: {
     send: handlers.goodJob.send
   }
-  */
 }
 
 /*
@@ -127,7 +125,7 @@ function describeSeqs() {
   return descriptions;
 }
 
-function handleSequence(userID, userResp, currState) {
+function handleSequence(userID, userResp, currState, options = undefined) {
   try {
     let beginningSeqs = getBeginningSeqs();
     if (currState === 'Default') {
@@ -136,7 +134,7 @@ function handleSequence(userID, userResp, currState) {
         handleError(userID, 'Check', new Error('No matching check function for user response.'));
         return;
       }
-      callSend(userID, userResp, seqName);
+      callSend(userID, userResp, seqName, options);
     } else {
       callAnalyze(userID, userResp, currState);
     }
@@ -150,17 +148,20 @@ function callCheck(userResp, seqName) {
   return SEQUENCES[seqName]['check'](userResp);
 }
 
-function callSend(userID, userResp, seqName) {
+function callSend(userID, userResp, seqName, options = undefined) {
   let nextState = SEQUENCES[seqName]['analyze'] ? seqName : 'Default'
   setWaitState(userID, nextState);
 
-  // hack that injects sequence description for help
+  // injection hack
   if (seqName === 'Help') {
     userResp = describeSeqs();
   }
+  if (seqName === 'PollNotification' || seqName === 'PollInterrupt') {
+    userResp = options;
+  }
 
   let error = SEQUENCES[seqName]['send'](userID, userResp);
-  if (error !== null) {
+  if (error) {
     handleError(userID, 'Send', error);
     return;
   }
@@ -170,7 +171,7 @@ function callAnalyze(userID, userResp, seqName) {
   let sequence = SEQUENCES[seqName];
   let nextSeqs = sequence['nextSeqs'];
   let {nextSeqName, error} = sequence['analyze'](userID, userResp, nextSeqs);
-  if (error !== null) {
+  if (error) {
     handleError(userID, 'Analyze', error);
     return;
   }
@@ -179,14 +180,10 @@ function callAnalyze(userID, userResp, seqName) {
   }
 }
 
-// What to do if user's state isn't default?
-// - Likely save task as not done and revert everything to default
+// If user is Remind, mark as not done; else send a reminder
 function handlePollInterrupt(userID, currState) {
-  if (currState === 'Remind') {
-    handleSequence(userID, 'poll', 'Remind');
-  } else {
-    handleSequence(userID, 'poll', 'Default');
-  }
+  let status = currState === 'Remind' ? 'PollInterrupt' : 'PollNotification';
+  handleSequence(userID, status, 'Default', { interrupt: 'true' });
 }
 
 function handleError(userID, errorType, error) {

@@ -7,6 +7,7 @@ const
 
 const
   gateway = require('./src/controllers/gateway'),
+  poll = require('./src/controllers/poll'),
   verification = require('./src/controllers/verification');
 
 const
@@ -27,3 +28,4 @@ app.get('/', function(request, response) {
 
 app.get('/gateway', verification.verifyToken);
 app.post('/gateway', gateway.respond);
+app.post('/poll', poll.respond);

@@ -1,19 +1,31 @@
 module.exports = {
-	check: check,
-	send: send
+	send: send,
+	analyze: analyze
 }
 
 const com = require('../helpers/communication.js');
 
-function check(userResp) {
-	return userResp.match('.*remind me.*');
-}
+const PAYLOADS = {"Virtues": "Virtues", "Hindrances": "Hindrances"};
 
 function send(userID, userResp) {
-	com.sendTextMessage(userID, 'Let us just say that the reminder has been set.');
+	message = `Which area of inner development do you want to focus on during your next practice?`
+	com.sendQuickReply(userID, message, PAYLOADS);
 	return null;
 }
 
 function analyze(userID, userResp, nextSeqs) {
-	return { nextSeqName: 'help', error: null };
+	let 
+		nextSeqName = null,
+		error = null;
+	switch(userResp) {
+		case PAYLOADS["Virtues"]:
+			nextSeqName = nextSeqs[0];
+			break;
+		case PAYLOADS["Hindrances"]:
+			nextSeqName = nextSeqs[1];
+			break;
+		default:
+			error = new Error(`Invalid quick reply answer for user ${userID}`);
+	}
+	return {nextSeqName: nextSeqName, error: error};
 }

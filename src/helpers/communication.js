@@ -41,6 +41,7 @@ function syncSendAPI(recipientId) {
       userQueue['isIdle'] = true;
       syncSendAPI(recipientId);
     }).catch(error => {
+      console.log(`[Error: Send] with syncSendAPI recursion`);
       return;
     });
   }
