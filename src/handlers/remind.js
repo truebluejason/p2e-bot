@@ -27,7 +27,7 @@ function send(userID, userResp) {
 		}
 	}
 
-	message = `${message}.\n\nPlease choose one of the responses below after finishing the practice.`
+	message = `${message}\n\nPlease choose one of the responses below after finishing the practice.`
 	com.sendQuickReply(userID, message, PAYLOADS);
 	return null;
 }

@@ -156,7 +156,7 @@ function callSend(userID, userResp, seqName, options = undefined) {
   if (seqName === 'Help') {
     userResp = describeSeqs();
   }
-  if (seqName === 'PollNotification' || seqName === 'PollInterrupt') {
+  if (userResp === 'PollNotification' || userResp === 'PollInterrupt') {
     userResp = options;
   }
 
@@ -181,9 +181,9 @@ function callAnalyze(userID, userResp, seqName) {
 }
 
 // If user is Remind, mark as not done; else send a reminder
-function handlePollInterrupt(userID, currState) {
+function handlePollInterrupt(userID, currState, message) {
   let status = currState === 'Remind' ? 'PollInterrupt' : 'PollNotification';
-  handleSequence(userID, status, 'Default', { interrupt: 'true' });
+  handleSequence(userID, status, 'Default', { message: message, interrupt: 'true' });
 }
 
 function handleError(userID, errorType, error) {

@@ -38,8 +38,8 @@ function evalPoll(userID, message) {
 		return;
 	}
 	if (userState !== 'Default') {
-		seq.handlePollInterrupt(userID, userState);
+		seq.handlePollInterrupt(userID, userState, message);
 		return;
 	}
-	seq.handleSequence(userID, 'PollNotification', 'Default');
+	seq.handleSequence(userID, 'PollNotification', 'Default', { message: message });
 }
