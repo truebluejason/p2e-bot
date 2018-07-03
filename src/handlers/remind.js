@@ -17,14 +17,16 @@ function send(userID, userResp) {
 	if (!userResp instanceof Object) {
 		return new Error('Remind sequence expected userResp of type Object.');
 	}
-	let { message, interrupt } = userResp;
+	let { contentID, message, interrupt } = userResp;
 
 	// If user hasn't responded to previous request
-	if (interrupt) {
-		if (db.createInterruptEntry(userID)) {
-			error = new Error(`Interrupt entry not created for user ${userID}.`);
-			return error;
-		}
+	if (interrupt && db.updateInterruptEntry(userID)) {
+		return new Error(`Interrupt entry not created for user ${userID}.`);
+	}
+
+	// Create a currentEntry row to save content sent
+	if (db.createCurrentEntry(userID, contentID)) {
+		return new Error(`currentEntry row not created for user ${userID}.`);
 	}
 
 	message = `${message}\n\nPlease choose one of the responses below after finishing the practice.`
@@ -38,14 +40,14 @@ function analyze(userID, userResp, nextSeqs) {
 		error = null;
 	switch(userResp) {
 		case PAYLOADS["Task Finished"]:
-			if (db.createEntry(userID, 'Done')) {
-				error = new Error(`DoneEntry not created for user ${userID}.`);
+			if (db.updateEntry(userID, 'DoneStatus', 'Done')) {
+				error = new Error(`Status not updated for user ${userID}.`);
 			}
 			nextSeqName = nextSeqs[0];
 			break;
 		case PAYLOADS["Won't Do"]:
-			if (db.createEntry(userID, 'NotDone')) {
-				error = new Error(`NotDoneEntry not created for user ${userID}.`);
+			if (db.updateEntry(userID, 'DoneStatus', 'NotDone')) {
+				error = new Error(`Status not updated for user ${userID}.`);
 			}
 			nextSeqName = nextSeqs[1];
 			break;

@@ -6,6 +6,7 @@ const
   express = require('express');
 
 const
+  db = require('./src/helpers/database'),
   gateway = require('./src/controllers/gateway'),
   poll = require('./src/controllers/poll'),
   verification = require('./src/controllers/verification');
@@ -16,6 +17,12 @@ const
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+db.initConnectionObject({
+  host: config.get('db_host'),
+  user: config.get('db_user'),
+  password: config.get('db_password')
+});
 
 app.listen(port, function() {
   console.log(`started listening on port ${port}`);

@@ -29,9 +29,12 @@ function evalPostback(userID, payload) {
 	seq.handleSequence(userID, payload, userState);
 }
 
-function evalPoll(userID, message) {
-	// What to do if user's state isn't default?
-	// - Likely save task as not done and revert everything to default
+function evalPoll(userID, contentID, message) {
+	// Save task as not done if previous reminder times out
+	if (!userID || !contentID) {
+		console.log("The request's userID or contentID field is missing.");
+		return;
+	}
 	let userState = db.getWaitState(userID);
 	if (!userState) {
 		console.log('db.getWaitState for ' + userID + ' has failed.');
@@ -39,7 +42,7 @@ function evalPoll(userID, message) {
 	}
 	if (userState !== 'Default') {
 		seq.handlePollInterrupt(userID, userState, message);
-		return;
+	} else {
+		seq.handleSequence(userID, 'PollNotification', 'Default', { contentID: contentID, message: message });
 	}
-	seq.handleSequence(userID, 'PollNotification', 'Default', { message: message });
 }

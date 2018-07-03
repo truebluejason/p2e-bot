@@ -10,14 +10,15 @@ Format
 {
 	userID: '<Id>',
 	userName: '<Name>',
+	contentID: '<Id>',
 	message: '<Message to Send>'
 }
 */
 function respond(req, res) {
 	const data = req.body;
 	if (data) {
-		let { userID, message } = data;
-		user.evalPoll(userID, message);
+		let { userID, contentID, message } = data;
+		user.evalPoll(userID, contentID, message);
 	}
 	res.status(200).send('Poll received');
 }
