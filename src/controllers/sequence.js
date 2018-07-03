@@ -172,13 +172,6 @@ function callAnalyze(userID, userResp, seqName) {
   let nextSeqs = sequence['nextSeqs'];
   let {nextSeqName, error} = sequence['analyze'](userID, userResp, nextSeqs);
 
-
-// ADD SUBSCRIPTION MSG TAG TO SYNCSENDAPI
-// LAST DITCH: SEND AND ANALYZE BECOME ASYNC FUNC
-// LAST DITCH: SETWAITSTATE INSIDE SEND BEFORE ANYTHING
-// LAST DITCH: MOVE ERROR AND NEXTSEQNAME INTO ANALYZE AS CALLBACK
-
-
   if (error) {
     handleError(userID, 'Analyze', error);
     return;

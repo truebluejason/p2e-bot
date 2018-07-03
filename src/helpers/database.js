@@ -11,59 +11,6 @@ module.exports = {
 }
 
 /*
-- Create Database
-CREATE DATABASE P2E;
-
-
-- Create Tables
-CREATE TABLE Users (
-  UserID VARCHAR(128) UNIQUE NOT NULL,
-  State VARCHAR(128) NOT NULL,
-  Name VARCHAR(128),
-  PRIMARY KEY (UserID)
-);
-CREATE TABLE Contents (
-  ContentID INT AUTO_INCREMENT UNIQUE NOT NULL, 
-  Type ENUM('Image','Link','Quote') NOT NULL, 
-  Content VARCHAR(256) NOT NULL,
-  Priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
-  PRIMARY KEY (ContentID)
-);
-CREATE TABLE Times (
-  UserID VARCHAR(128) NOT NULL, 
-  Stamp TIME,
-  FOREIGN KEY (UserID) References Users(UserID)
-);
-CREATE TABLE Entries (
-  UserID VARCHAR(128) NOT NULL, 
-  ContentID INT NOT NULL, 
-  DoneStatus ENUM('Done','NotDone') NOT NULL, 
-  Area VARCHAR(128), 
-  Plan VARCHAR(256), 
-  Remedy VARCHAR(256),
-  FOREIGN KEY (UserID) References Users(UserID),
-  FOREIGN KEY (ContentID) References Contents(ContentID)
-);
-CREATE TABLE CurrentEntries (
-  UserID VARCHAR(128) UNIQUE NOT NULL, 
-  ContentID INT NOT NULL, 
-  DoneStatus ENUM('Done','NotDone') NOT NULL, 
-  Area VARCHAR(128), 
-  Plan VARCHAR(256), 
-  Remedy VARCHAR(256),
-  FOREIGN KEY (UserID) References Users(UserID),
-  FOREIGN KEY (ContentID) References Contents(ContentID)
-);
-
-
-- Create Indexes
-CREATE INDEX UserIDX ON Users(UserID);
-CREATE INDEX ContentIDX ON Contents(ContentID);
-CREATE INDEX StampIDX ON Times(Stamp);
-CREATE INDEX EntryIDX ON Entries(UserID);
-CREATE INDEX CurrentEntryIDX ON CurrentEntries(UserID);
-
-
 - Example Operations
 INSERT INTO Users(UserID, State) VALUES ('111', 'Default');
 INSERT INTO Times(UserID, Stamp) VALUES ('111', '7:30');
@@ -76,51 +23,23 @@ INSERT INTO CurrentEntries(UserID, ContentID, DoneStatus) VALUES ('111', 2, 'Not
 UPDATE CurrentEntries SET Area = 'Faith' WHERE UserID = '111';
 */
 
-const mysql = require('mysql');
-const { promisify } = require('util');
+const mysql = require('sync-mysql');
 
-let con, connectPromise, queryPromise;
+let con;
 let tmpState = 'Default';
 
 function initConnectionObject(configObj) {
-	con = mysql.createConnection(configObj);
-	// Convert connect and query methods to Promises to be used with async/await
-	connectPromise = promisify(con.connect);
-	queryPromise = promisify(con.query);
-
-	let {err, result} = execSQL('SELECT * FROM Users');
-	console.log('query error: ' + err);
-	console.log('query result: ' + result);
+	con = new mysql(configObj);
 }
 
-/*
-returns {err, result}
-*/
-async function execSQL(sql) {
-	let err, result, fields;
-
-	debugger;
+function execSQL(sql) {
+	let err, result;
 	try {
-		err = await connectPromise();
-		debugger;
-		console.log(`after connectPromise, err: ${err}`);
-		if (err) throw err;
-
-		result = await queryPromise(sql);
-		//{ err, result, fields } = await queryPromise(sql);
-		console.log(`after connectPromise, err: ${err}, result: ${result}, fields: ${fields}`);
-		if (err) throw err;
-
-		return {result: result};
-	} catch(err) {
-		console.log(err.message);
-		debugger;
-		return {err: err};
+		result = con.query(sql);
+	} catch(error) {
+		err = error;
 	}
-}
-
-async function waitFor(value) {
-	
+	return {err: err, result: result};
 }
 
 function getWaitState(userID) {

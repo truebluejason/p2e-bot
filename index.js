@@ -21,7 +21,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 db.initConnectionObject({
   host: config.get('db_host'),
   user: config.get('db_user'),
-  password: config.get('db_password')
+  password: config.get('db_password'),
+  database: config.get('db_name')
 });
 
 app.listen(port, function() {
