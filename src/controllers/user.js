@@ -8,24 +8,29 @@ module.exports = {
 };
 
 function evalMessage(userID, message) {
+	console.log(`Message / Payload ${message} received.`);
 	let { err, userState } = db.getWaitState(userID);
 	if (err) {
 		console.log('db.getWaitState for ' + userID + ' has failed.');
 		return;
 	}
 	// Strip to barebone message content
-	console.log(`Message / Payload ${message} received.`);
 	seq.handleSequence(userID, message, userState);
 }
 
 function evalPostback(userID, payload) {
+	console.log(`Payload ${payload} received.`);
 	let { err, userState } = db.getWaitState(userID);
 	if (err) {
 		console.log('db.getWaitState for ' + userID + ' has failed.');
 		return;
 	}
-	// Strip to barebone postback content
-	console.log(`Payload ${payload} received.`);
+	// If payload is from a new user
+	if (userState === 'NOUSER') {
+		seq.handleSequence(userID, 'GetStarted', 'Default');
+		return;
+	}
+
 	seq.handleSequence(userID, payload, userState);
 }
 

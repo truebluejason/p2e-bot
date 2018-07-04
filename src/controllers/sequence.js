@@ -39,6 +39,10 @@ const SEQUENCES = {
     check: handlers.help.check,
     send: handlers.help.send
   },
+  Greeting: {
+    check: handlers.greeting.check,
+    send: handlers.greeting.send
+  },
   RemindGet: {
     desc: "*get reminders*: Get your previously set reminders.",
     check: handlers.remindGet.check,
@@ -129,6 +133,7 @@ function handleSequence(userID, userResp, currState, options = undefined) {
   try {
     let beginningSeqs = getBeginningSeqs();
     if (currState === 'Default') {
+      debugger;
       let seqName = beginningSeqs.filter(seqName => callCheck(userResp, seqName))[0];
       if (seqName === undefined) {
         handleError(userID, 'Check', new Error('No matching check function for user response.'));
@@ -136,6 +141,7 @@ function handleSequence(userID, userResp, currState, options = undefined) {
       }
       callSend(userID, userResp, seqName, options);
     } else {
+      debugger;
       callAnalyze(userID, userResp, currState);
     }
   } catch(error) {

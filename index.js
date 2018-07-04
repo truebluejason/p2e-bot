@@ -6,6 +6,7 @@ const
   express = require('express');
 
 const
+  com = require('./src/helpers/communication'),
   db = require('./src/helpers/database'), // Remove soon?
   gateway = require('./src/controllers/gateway'),
   poll = require('./src/controllers/poll'),
@@ -17,6 +18,7 @@ const
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+com.setProfileAPI();
 
 app.listen(port, function() {
   console.log(`started listening on port ${port}`);
@@ -24,7 +26,6 @@ app.listen(port, function() {
 
 app.get('/', function(request, response) {
   response.send('hello world');
-  console.log('response sent for /')
 });
 
 app.get('/gateway', verification.verifyToken);

@@ -21,7 +21,7 @@ function send(userID, userResp) {
 	if (error) {
 		return error;
 	}
-	com.sendTextMessage(userID, `Reminder set at ${timesArray.reduce((resp, time) => resp + ' ' + time)}`);
+	com.sendTextMessage(userID, `Reminder set at ${timesArray.reduce((resp, time) => resp + ' ' + time)}. See you then!`);
 	return null;
 }
 

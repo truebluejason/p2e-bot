@@ -4,7 +4,8 @@ module.exports = {
   sendQuickReply: sendQuickReply,
   sendSubscriptionQuickReply: sendSubscriptionQuickReply,
   sendImageMessage: sendImageMessage,
-  sendPtoEButton: sendPtoEButton
+  sendPtoEButton: sendPtoEButton,
+  setProfileAPI: setProfileAPI
 }
 
 const config = require('config');
@@ -42,7 +43,7 @@ function syncSendAPI(recipientId) {
       userQueue['isIdle'] = true;
       syncSendAPI(recipientId);
     }).catch(error => {
-      console.log(`[Error: Send] with syncSendAPI recursion`);
+      console.log(`[Error: Send] with syncSendAPI recursion.`);
       return;
     });
   }
@@ -201,4 +202,49 @@ function sendPtoEButton(recipientId) {
   };
 
   queueOps(recipientId, messageData);
+}
+
+// Sets up get started button / persistent menu
+function setProfileAPI() {
+  let successStatus;
+  let payload = {
+    uri: `https://graph.facebook.com/v2.6/me/messenger_profile?access_token=${config.get('pageAccessToken')}`,
+    method: 'POST',
+    json: {
+      get_started: {
+        payload: "NEW_USER"
+      },
+      greeting: [{
+        locale: 'default',
+        text: 'I am a meditation helper.'
+      }],
+      persistent_menu: [{
+        "locale":"default",
+        "call_to_actions":[
+          {
+            "title":"What can I do?",
+            "type":"postback",
+            "payload": "help"
+          },
+          {
+            "type":"web_url",
+            "title":"Visit P2E Website.",
+            "url":"https://path-to-enlightenment.firebaseapp.com/",
+            "webview_height_ratio":"full"
+          }
+        ]
+      }]
+    }
+  };
+  requestPromise(payload).then(res => {
+    debugger;
+    if (res.statusCode == 200) {
+      successStatus = true;
+    } else {
+      throw new Error('Failed calling Send API.');
+    }
+  }).catch(error => {
+    console.log('ProfileAPI could not be set.');
+    process.exit(1);
+  });
 }

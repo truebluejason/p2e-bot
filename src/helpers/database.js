@@ -12,11 +12,7 @@ module.exports = {
 
 /*
 - Example Operations
-INSERT INTO Users(UserID, State) VALUES ('111', 'Default');
-INSERT INTO Times(UserID, Stamp) VALUES ('111', '7:30');
-INSERT INTO Contents(Type, Content) VALUES ('Quote', 'Yolo!');
-INSERT INTO Contents(Type, Content) VALUES ('Quote', 'Peace.');
-INSERT INTO CurrentEntries(UserID, ContentID, DoneStatus) VALUES ('111', 1, 'NotDone');
+INSERT INTO CurrentEntries(UserID, ContentID, DoneStatus) VALUES ('111', 2, 'NotDone');
 INSERT INTO Entries SELECT * FROM CurrentEntries WHERE UserID = '111';
 DELETE FROM CurrentEntries WHERE UserID = '111';
 INSERT INTO CurrentEntries(UserID, ContentID, DoneStatus) VALUES ('111', 2, 'NotDone');
@@ -54,7 +50,8 @@ function getWaitState(userID) {
 		values = [userID];
 
 	let {err, result} = execSQL(sql, values);
-	result = result[0] ? result[0]['State'] : 'ERROR';
+	result = result[0] ? result[0]['State'] : 'NOUSER';
+	console.log('getWaitState result is: ' + result);
 	return {err: err, userState: result};
 }
 
