@@ -8,8 +8,8 @@ module.exports = {
 };
 
 function evalMessage(userID, message) {
-	let userState = db.getWaitState(userID);
-	if (!userState) {
+	let { err, userState } = db.getWaitState(userID);
+	if (err) {
 		console.log('db.getWaitState for ' + userID + ' has failed.');
 		return;
 	}
@@ -19,8 +19,8 @@ function evalMessage(userID, message) {
 }
 
 function evalPostback(userID, payload) {
-	let userState = db.getWaitState(userID);
-	if (!userState) {
+	let { err, userState } = db.getWaitState(userID);
+	if (err) {
 		console.log('db.getWaitState for ' + userID + ' has failed.');
 		return;
 	}
@@ -35,8 +35,8 @@ function evalPoll(userID, contentID, message) {
 		console.log("The request's userID or contentID field is missing.");
 		return;
 	}
-	let userState = db.getWaitState(userID);
-	if (!userState) {
+	let { err, userState } = db.getWaitState(userID);
+	if (err) {
 		console.log('db.getWaitState for ' + userID + ' has failed.');
 		return;
 	}

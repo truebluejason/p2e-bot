@@ -188,7 +188,7 @@ function handlePollInterrupt(userID, currState, message) {
 }
 
 function handleError(userID, errorType, error) {
-  com.sendTextMessage(userID, "I'm afraid I don't understand.");
+  com.sendTextMessage(userID, "I'm afraid I don't understand.\n\nType '*help*' to discover what you can tell me to do.");
   callSend(userID, null, 'Help');
   console.log(`[Error: ${errorType}] related to userID: ${userID}`);
   if (error.message !== '') {
@@ -200,11 +200,12 @@ function handleError(userID, errorType, error) {
 function setWaitState(userID, nextState) {
   try {
 
-    if (!nextState) {
-      throw new Error("setWaitState method's nextState field is undefined.");
-    }
+    if (!nextState) throw new Error("setWaitState method's nextState field is undefined.");
+
     // use Cache here?
-    db.setWaitState(userID, nextState);
+    let {err, result} = db.setWaitState(userID, nextState);
+
+    if (err) throw err;
 
   } catch(error) {
     // Record analytics here?

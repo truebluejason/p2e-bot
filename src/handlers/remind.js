@@ -31,6 +31,9 @@ function send(userID, userResp) {
 
 	message = `${message}\n\nPlease choose one of the responses below after finishing the practice.`
 	com.sendQuickReply(userID, message, PAYLOADS);
+
+	// USE THE FOLLOWING IN PRODUCTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//com.sendSubscriptionQuickReply(userID, message, PAYLOADS);
 	return null;
 }
 

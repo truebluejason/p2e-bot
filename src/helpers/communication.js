@@ -2,6 +2,7 @@ module.exports = {
   sendTextMessage: sendTextMessage,
   sendButtonMessage: sendButtonMessage,
   sendQuickReply: sendQuickReply,
+  sendSubscriptionQuickReply: sendSubscriptionQuickReply,
   sendImageMessage: sendImageMessage,
   sendPtoEButton: sendPtoEButton
 }
@@ -119,6 +120,35 @@ function sendQuickReply(recipientId, replyText, replyObject) {
     }
   });
   var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: replyText,
+      quick_replies: replyArray
+    }
+  };
+
+  queueOps(recipientId, messageData);
+}
+
+/* Input Format
+{
+  <TEXT>: <CUSTOM_PAYLOAD>,
+  "Choose Virtue": PAYLOADS["VIRTUE"]
+}
+*/
+function sendSubscriptionQuickReply(recipientId, replyText, replyObject) {
+  var replyArray = Object.keys(replyObject).map(key => {
+    return {
+      "content_type": "text",
+      "title": key,
+      "payload": replyObject[key]
+    }
+  });
+  var messageData = {
+    messaging_type: "MESSAGE_TAG",
+    tag: "NON_PROMOTIONAL_SUBSCRIPTION",
     recipient: {
       id: recipientId
     },

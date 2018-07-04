@@ -1,7 +1,7 @@
 module.exports = {
-	initConnectionObject: initConnectionObject,
 	getWaitState: getWaitState,
 	setWaitState: setWaitState,
+	createUser: createUser,
 	createCurrentEntry: createCurrentEntry,
 	updateInterruptEntry: updateInterruptEntry,
 	updateEntry: updateEntry,
@@ -23,32 +23,55 @@ INSERT INTO CurrentEntries(UserID, ContentID, DoneStatus) VALUES ('111', 2, 'Not
 UPDATE CurrentEntries SET Area = 'Faith' WHERE UserID = '111';
 */
 
-const mysql = require('sync-mysql');
+const
+	config = require('config'), 
+	mysql = require('sync-mysql');
 
-let con;
+let configObj = {
+  host: config.get('db_host'),
+  user: config.get('db_user'),
+  password: config.get('db_password'),
+  database: config.get('db_name')
+};
 let tmpState = 'Default';
 
-function initConnectionObject(configObj) {
-	con = new mysql(configObj);
-}
-
-function execSQL(sql) {
-	let err, result;
+// returns error and result
+function execSQL(sql, values) {
+	let con, err, result;
 	try {
-		result = con.query(sql);
+		con = new mysql(configObj);
+		result = con.query(sql, values);
 	} catch(error) {
 		err = error;
 	}
+	if (con instanceof mysql) con.dispose();
 	return {err: err, result: result};
 }
 
 function getWaitState(userID) {
-	return tmpState;
+	let
+		sql = 'SELECT State FROM Users WHERE UserID = ?',
+		values = [userID];
+
+	let {err, result} = execSQL(sql, values);
+	result = result[0] ? result[0]['State'] : 'ERROR';
+	return {err: err, userState: result};
 }
 
 function setWaitState(userID, nextState) {
-	tmpState = nextState;
-	console.log(`tmpState is ${tmpState}`)
+	let
+		sql = 'UPDATE Users SET State = ? WHERE UserID = ?',
+		values = [nextState, userID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err};
+}
+
+function createUser(userID) {
+	let
+		sql = 'INSERT INTO Users(UserID, State) VALUES (?, "Default");',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err};
 }
 
 function createCurrentEntry(userID, contentID) {
