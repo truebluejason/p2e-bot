@@ -34,10 +34,10 @@ function evalPostback(userID, payload) {
 	seq.handleSequence(userID, payload, userState);
 }
 
-function evalPoll(userID, contentID, message) {
+function evalPoll(userID, data) {
 	// Save task as not done if previous reminder times out
-	if (!userID || !contentID) {
-		console.log("[Error: Poll] The request's userID or contentID field is missing.");
+	if (!data['userID'] || !data['contentID'] || !data['contentType'] || !data['payload']) {
+		console.log("[Error: Poll] The request's field is missing.");
 		return;
 	}
 	let { err, userState } = db.getWaitState(userID);
@@ -46,8 +46,8 @@ function evalPoll(userID, contentID, message) {
 		return;
 	}
 	if (userState !== 'Default') {
-		seq.handlePollInterrupt(userID, userState, contentID, message);
+		seq.handlePollInterrupt(userID, userState, data);
 	} else {
-		seq.handleSequence(userID, 'PollNotification', 'Default', { contentID: contentID, message: message });
+		seq.handleSequence(userID, 'PollNotification', 'Default', data);
 	}
 }

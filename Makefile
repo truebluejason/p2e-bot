@@ -21,7 +21,13 @@ help:
 	@echo
 
 poll:
-	curl --header "Content-Type: application/json" --request POST --data '{"userID":"${test_uid}", "message":"Not one, not two.", "contentID": "1"}' localhost:${server_port}/poll
+	curl --header "Content-Type: application/json" --request POST --data '{"userID":"${test_uid}", "payload":"Not one, not two.", "contentID": "1", "contentType": "Quote"}' localhost:${server_port}/poll
+
+poll_image:
+	curl --header "Content-Type: application/json" --request POST --data '{"userID":"${test_uid}", "payload":"https://image.shutterstock.com/image-photo/sand-lily-spa-stones-zen-260nw-268875851.jpg", "contentID": "2", "contentType": "Image"}' localhost:${server_port}/poll
+
+poll_link:
+	curl --header "Content-Type: application/json" --request POST --data '{"userID":"${test_uid}", "payload":"https://path-to-enlightenment.firebaseapp.com/", "contentID": "3", "contentType": "Link"}' localhost:${server_port}/poll
 
 purge_db:
 	$(MAKE) start_db

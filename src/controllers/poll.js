@@ -11,14 +11,14 @@ Format
 	userID: '<Id>',
 	userName: '<Name>',
 	contentID: '<Id>',
-	message: '<Message to Send>'
+	contentType: '<Image / Link / Quote>'
+	payload: '<Message to Send>'
 }
 */
 function respond(req, res) {
 	const data = req.body;
 	if (data) {
-		let { userID, contentID, message } = data;
-		user.evalPoll(userID, contentID, message);
+		user.evalPoll(data['userID'], data);
 	}
 	res.status(200).send('Poll received');
 }

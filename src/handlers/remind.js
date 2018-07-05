@@ -17,7 +17,7 @@ function send(userID, userResp) {
 	if (!userResp instanceof Object) {
 		return new Error('Remind sequence expected userResp of type Object.');
 	}
-	let { contentID, message, interrupt } = userResp;
+	let { contentID, contentType, payload, interrupt } = userResp;
 
 	/*
 	If user hasn't responded to previous request
@@ -35,8 +35,22 @@ function send(userID, userResp) {
 		return new Error(`currentEntry row not created for user ${userID}.`);
 	}
 
-	message = `${message}\n\nPlease choose one of the responses below after finishing the practice.`
-	com.sendQuickReply(userID, message, PAYLOADS);
+	switch(contentType) {
+		case 'Image':
+			com.sendImageMessage(userID, payload);
+			com.sendQuickReply(userID, 'Please choose one of the responses below after finishing the practice.', PAYLOADS);
+			break;
+		case 'Link':
+			com.sendTextMessage(userID, `Here's the link of the day.\n${payload}`);
+			com.sendQuickReply(userID, 'Please choose one of the responses below after finishing the practice.', PAYLOADS);
+			break;
+		case 'Quote':
+			payload = `${payload}\n\nPlease choose one of the responses below after finishing the practice.`
+			com.sendQuickReply(userID, payload, PAYLOADS)
+			break;
+		default:
+			return new Error(`Invalid contentType received.`);
+	};
 
 	// USE THE FOLLOWING IN PRODUCTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//com.sendSubscriptionQuickReply(userID, message, PAYLOADS);

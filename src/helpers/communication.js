@@ -162,7 +162,7 @@ function sendSubscriptionQuickReply(recipientId, replyText, replyObject) {
   queueOps(recipientId, messageData);
 }
 
-function sendImageMessage(recipientId) {
+function sendImageMessage(recipientId, link) {
   var messageData = {
     recipient: {
       id: recipientId
@@ -171,7 +171,7 @@ function sendImageMessage(recipientId) {
       attachment: {
         type: "image",
         payload: {
-          url: config.get("serverURL") + "/assets/rift.png"
+          url: link
         }
       }
     }

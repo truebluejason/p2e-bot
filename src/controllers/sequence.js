@@ -186,9 +186,10 @@ function callAnalyze(userID, userResp, seqName) {
 }
 
 // If user is Remind, mark as not done; else send a reminder
-function handlePollInterrupt(userID, currState, contentID, message) {
+function handlePollInterrupt(userID, currState, contentInfo) {
   let status = currState === 'Remind' ? 'PollInterrupt' : 'PollNotification';
-  handleSequence(userID, status, 'Default', { contentID: contentID, message: message, interrupt: 'true' });
+  contentInfo['interrupt'] = 'true';
+  handleSequence(userID, status, 'Default', contentInfo);
 }
 
 function handleError(userID, errorType, error) {
