@@ -1,8 +1,8 @@
 **TODO**
 
 *Major*
-- [ ] Greeting sequence for user and use `db.createUser` to save him/her to the database
-- [ ] Finish implementation of database.js.
++ Implement a Go-based poller.
++ Host the bot on EC2.
 
 *Trivial*
-- [ ] Edit remind.js to use `com.sendSubscriptionQuickReply` instead of `com.sendQuickReply`.
++ Edit remind.js to use `com.sendSubscriptionQuickReply` instead of `com.sendQuickReply`.

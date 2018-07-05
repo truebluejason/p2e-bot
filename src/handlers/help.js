@@ -10,8 +10,9 @@ function check(userResp) {
 }
 
 function send(userID, userResp) {
-	let explain = "I assist your meditation by reminding you to practice and reflect on your progress.\n\n" + 
-				"You can get started by scheduling daily reminder(s) as shown below.\n\n";
+	let explain = "I assist your meditation by reminding you to practice and reflect on your progress.\n\n" +
+				"Everyday at specified times, I will send you a quote and an interactive chat sequence to help shape your journey for equanimity.\n\n" +
+				"You can get started by scheduling daily reminder(s) as shown below.";
 	com.sendTextMessage(userID, explain);
 	let
 		intro = 'Here are some things you can tell me to do.',
