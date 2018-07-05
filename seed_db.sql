@@ -48,6 +48,9 @@ CREATE INDEX ContentIDX ON Contents(ContentID);
 CREATE INDEX EntryIDX ON Entries(UserID);
 CREATE INDEX CurrentEntryIDX ON CurrentEntries(UserID);
 
+# Create Constraints
+ALTER TABLE UserTimes ADD CONSTRAINT UserId_Stamp UNIQUE(UserID, Stamp);
+
 # Create Test User
 INSERT INTO Users(UserID, State) VALUES ('111', 'Default');
 INSERT INTO UserTimes(UserID, Stamp) VALUES ('111', '08:00:00');

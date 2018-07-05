@@ -19,13 +19,19 @@ function send(userID, userResp) {
 	}
 	let { contentID, message, interrupt } = userResp;
 
-	// If user hasn't responded to previous request
-	if (interrupt && db.updateInterruptEntry(userID)) {
+	/*
+	If user hasn't responded to previous request
+	if (interrupt && db.saveTimedOutEntry(userID)['err']) {
 		return new Error(`Interrupt entry not created for user ${userID}.`);
+	}
+	*/
+
+	if (db.saveToEntry(userID)['err']) {
+		return new Error(`currentEntry clearing returned an error for user ${userID}`);
 	}
 
 	// Create a currentEntry row to save content sent
-	if (db.createCurrentEntry(userID, contentID)) {
+	if (db.createCurrentEntry(userID, contentID)['err']) {
 		return new Error(`currentEntry row not created for user ${userID}.`);
 	}
 
@@ -43,15 +49,13 @@ function analyze(userID, userResp, nextSeqs) {
 		error = null;
 	switch(userResp) {
 		case PAYLOADS["Task Finished"]:
-			if (db.updateEntry(userID, 'DoneStatus', 'Done')) {
+			if (db.updateCurrentEntry(userID, 'DoneStatus', 'Done')['err']) {
 				error = new Error(`Status not updated for user ${userID}.`);
 			}
 			nextSeqName = nextSeqs[0];
 			break;
 		case PAYLOADS["Won't Do"]:
-			if (db.updateEntry(userID, 'DoneStatus', 'NotDone')) {
-				error = new Error(`Status not updated for user ${userID}.`);
-			}
+			// DoneStatus is NotDone by default so do nothing
 			nextSeqName = nextSeqs[1];
 			break;
 		default:

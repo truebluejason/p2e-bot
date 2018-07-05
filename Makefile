@@ -21,7 +21,7 @@ help:
 	@echo
 
 poll:
-	curl --header "Content-Type: application/json" --request POST --data '{"userID":"${test_uid}", "message":"Not one, not two."}' localhost:${server_port}/poll
+	curl --header "Content-Type: application/json" --request POST --data '{"userID":"${test_uid}", "message":"Not one, not two.", "contentID": "1"}' localhost:${server_port}/poll
 
 purge_db:
 	$(MAKE) start_db

@@ -17,7 +17,7 @@ function send(userID, userResp) {
 		return error;
 	}
 	timesArray = times;
-	error = db.reminderSet(userID, timesArray);
+	error = db.reminderSet(userID, timesArray)['err'];
 	if (error) {
 		return error;
 	}

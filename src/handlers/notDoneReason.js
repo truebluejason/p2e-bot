@@ -49,8 +49,8 @@ function analyze(userID, userResp, nextSeqs) {
 			error = new Error(`Invalid quick reply answer for user ${userID}`);
 	}
 	if (!error) {
-		if (db.updateEntry(userID, 'Area', focus)) {
-			error = new Error(`Could not finish updateEntry user ${userID}`);
+		if (db.updateCurrentEntry(userID, 'Area', focus)['err']) {
+			error = new Error(`Could not finish updateCurrentEntry user ${userID}`);
 		}
 	}
 	nextSeqName = nextSeqs[0];

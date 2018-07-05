@@ -237,7 +237,6 @@ function setProfileAPI() {
     }
   };
   requestPromise(payload).then(res => {
-    debugger;
     if (res.statusCode == 200) {
       successStatus = true;
     } else {

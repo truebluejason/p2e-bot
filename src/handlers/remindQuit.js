@@ -27,7 +27,7 @@ function analyze(userID, userResp, nextSeqs) {
 		error = null;
 	switch(userResp) {
 		case PAYLOADS['yes']:
-			if (db.reminderQuit(userID)) {
+			if (db.reminderQuit(userID)['err']) {
 				error = new Error(`Reminder failed to be quit for user ${userID}.`);
 			}
 			nextSeqName = nextSeqs[0];

@@ -133,7 +133,6 @@ function handleSequence(userID, userResp, currState, options = undefined) {
   try {
     let beginningSeqs = getBeginningSeqs();
     if (currState === 'Default') {
-      debugger;
       let seqName = beginningSeqs.filter(seqName => callCheck(userResp, seqName))[0];
       if (seqName === undefined) {
         handleError(userID, 'Check', new Error('No matching check function for user response.'));
@@ -141,7 +140,6 @@ function handleSequence(userID, userResp, currState, options = undefined) {
       }
       callSend(userID, userResp, seqName, options);
     } else {
-      debugger;
       callAnalyze(userID, userResp, currState);
     }
   } catch(error) {
@@ -188,19 +186,30 @@ function callAnalyze(userID, userResp, seqName) {
 }
 
 // If user is Remind, mark as not done; else send a reminder
-function handlePollInterrupt(userID, currState, message) {
+function handlePollInterrupt(userID, currState, contentID, message) {
   let status = currState === 'Remind' ? 'PollInterrupt' : 'PollNotification';
-  handleSequence(userID, status, 'Default', { message: message, interrupt: 'true' });
+  handleSequence(userID, status, 'Default', { contentID: contentID, message: message, interrupt: 'true' });
 }
 
 function handleError(userID, errorType, error) {
   com.sendTextMessage(userID, "I'm afraid I don't understand.\n\nType '*help*' to discover what you can tell me to do.");
-  callSend(userID, null, 'Help');
   console.log(`[Error: ${errorType}] related to userID: ${userID}`);
   if (error.message !== '') {
     console.log(`- Reason: ${error.message}`);
   }
+  saveCurrentEntryToEntry(userID);
   setWaitState(userID, 'Default');
+}
+
+function saveCurrentEntryToEntry(userID) {
+  try {
+    let {err} = db.saveToEntry(userID);
+    if (err) throw err;
+  } catch(error) {
+    // Record analytics here?
+    console.log(`[Error: StateSet] related to userID: ${userID}`);
+    console.log(`- Reason: ${error.message}`);
+  }
 }
 
 function setWaitState(userID, nextState) {

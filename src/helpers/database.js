@@ -3,8 +3,9 @@ module.exports = {
 	setWaitState: setWaitState,
 	createUser: createUser,
 	createCurrentEntry: createCurrentEntry,
-	updateInterruptEntry: updateInterruptEntry,
-	updateEntry: updateEntry,
+	updateCurrentEntry: updateCurrentEntry,
+	saveTimedOutEntry: saveTimedOutEntry,
+	saveToEntry: saveToEntry,
 	reminderGet: reminderGet,
 	reminderSet: reminderSet,
 	reminderQuit: reminderQuit
@@ -46,18 +47,18 @@ function execSQL(sql, values) {
 
 function getWaitState(userID) {
 	let
-		sql = 'SELECT State FROM Users WHERE UserID = ?',
+		sql = 'SELECT State FROM Users WHERE UserID = ?;',
 		values = [userID];
 
 	let {err, result} = execSQL(sql, values);
 	result = result[0] ? result[0]['State'] : 'NOUSER';
-	console.log('getWaitState result is: ' + result);
+	console.log(`[DEBUG] Retrieved WaitState '${result}' for User '${userID}'.`);
 	return {err: err, userState: result};
 }
 
 function setWaitState(userID, nextState) {
 	let
-		sql = 'UPDATE Users SET State = ? WHERE UserID = ?',
+		sql = 'UPDATE Users SET State = ? WHERE UserID = ?;',
 		values = [nextState, userID];
 	let {err, result} = execSQL(sql, values);
 	return {err: err};
@@ -72,51 +73,110 @@ function createUser(userID) {
 }
 
 function createCurrentEntry(userID, contentID) {
-	// status is 'Done' or 'NotDone'
-	// status is NotDone as default
-	console.log('At createCurrentEntry');
-}
-
-// Save a NotDone entry without updating currentEntry field in user table
-function updateInterruptEntry(userID) {
-	// call saveEntry(userID);
-	console.log('At updateInterruptEntry');
+	let
+		now = new Date().toISOString().slice(0,10), // YYYY-MM-DD
+		sql = 'INSERT INTO CurrentEntries(UserID, EntryDate, ContentID, DoneStatus) VALUES (?, ?, ?, "NotDone");',
+		values = [userID, now, contentID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err};
 }
 
 // Check if currentEntry is set; if not return error, else modify the relevant row with field of interest
-function updateEntry(userID, field, value) {
-	console.log('At updateEntry');
-	console.log('value: ' + value);
+function updateCurrentEntry(userID, field, value) {
+	let sql, values;
 	switch(field) {
 		case 'Area':
+			sql = 'UPDATE CurrentEntries SET Area = ? WHERE UserID = ?;'
+			values = [value, userID];
 			break;
 		case 'Plan':
+			sql = 'UPDATE CurrentEntries SET Plan = ? WHERE UserID = ?;'
+			values = [value, userID];
 			break;
 		case 'Remedy':
+			sql = 'UPDATE CurrentEntries SET Remedy = ? WHERE UserID = ?;'
+			values = [value, userID];
 			break;
 		case 'DoneStatus':
+			sql = 'UPDATE CurrentEntries SET DoneStatus = ? WHERE UserID = ?;'
+			values = [value, userID];
 			break;
 		default:
 			return new Error('Update entry failed.');
 	}
-	return null;
+	let {err, result} = execSQL(sql, values);
+	if (err) return {err: err};
+
+	// CurrentEntry is finished when either field is set.
+	if (field === 'Plan' || field === 'Remedy') {
+		return saveToEntry(userID);
+	}
+
+	return {err: err, result: result};
 }
 
-// Save user's currentEntry to entry database
-function saveEntry(userID) {
-	console.log('At saveEntry');
+function getCurrentEntry(userID) {
+	let
+		sql = 'SELECT * FROM CurrentEntries WHERE UserID = ?;',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err, result: result[0]};
+}
+
+function deleteCurrentEntry(userID) {
+	let
+		sql = 'DELETE FROM CurrentEntries WHERE UserID = ?;',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err};
+}
+
+// Save a NotDone entry without updating currentEntry field in user table
+function saveTimedOutEntry(userID) {
+	// call saveToEntry(userID);
+	return saveToEntry(userID);
+}
+
+// Save user's currentEntry to entry database and delete it
+function saveToEntry(userID) {
+	let
+		sql = 'INSERT INTO Entries SELECT * FROM CurrentEntries WHERE UserID = ?;',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	if (err) return {err: err};
+
+	return deleteCurrentEntry(userID);
 }
 
 function reminderGet(userID) {
-	return ['8:23AM', '12:00PM', '10:50PM'];
+	let
+		sql = 'SELECT Stamp FROM UserTimes WHERE UserID = ?;',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	result = result[0] ? result.map(obj => obj['Stamp']) : [];
+	if (err) return {err: err};
+
+	return {result: result};
 }
 
-function reminderSet(userID, time) {
-	return null;
+function reminderSet(userID, timesArray) {
+	let
+		sql = 'INSERT INTO UserTimes(UserID, Stamp) VALUES (?, ?);',
+		values,
+		resp;
+	timesArray.forEach(time => {
+		values = [userID, time];
+		resp = execSQL(sql, values);
+		if (resp['err']) return {err: resp['err']}
+	});
+	return {err: null};
 }
 
 function reminderQuit(userID) {
-	console.log('AT REMINDERQUIT')
-	return null;
+	let
+		sql = 'DELETE FROM UserTimes WHERE UserID = ?;',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err};
 }
 

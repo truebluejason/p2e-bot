@@ -15,8 +15,8 @@ function analyze(userID, userResp, nextSeqs) {
 	let 
 		nextSeqName = nextSeqs[0],
 		error = null;
-	if (db.updateEntry(userID, 'Remedy', userResp)) {
-		error = new Error(`Could not finish updateEntry user ${userID}`);
+	if (db.updateCurrentEntry(userID, 'Remedy', userResp)['err']) {
+		error = new Error(`Could not finish updateCurrentEntry user ${userID}`);
 	}
 	return { nextSeqName: nextSeqName, error: error };
 }
