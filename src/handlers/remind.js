@@ -37,16 +37,16 @@ function send(userID, userResp) {
 
 	switch(contentType) {
 		case 'Image':
-			com.sendImageMessage(userID, payload);
-			com.sendQuickReply(userID, 'Please choose one of the responses below after finishing the practice.', PAYLOADS);
+			com.sendImageMessage(userID, payload, true);
+			com.sendQuickReply(userID, 'Please choose one of the responses below after finishing the practice.', PAYLOADS, true);
 			break;
 		case 'Link':
-			com.sendTextMessage(userID, `Here's the link of the day.\n${payload}`);
-			com.sendQuickReply(userID, 'Please choose one of the responses below after finishing the practice.', PAYLOADS);
+			com.sendLinkMessage(userID, "Link of the Day", payload, true);
+			com.sendQuickReply(userID, 'Please choose one of the responses below after finishing the practice.', PAYLOADS, true);
 			break;
 		case 'Quote':
 			payload = `${payload}\n\nPlease choose one of the responses below after finishing the practice.`
-			com.sendQuickReply(userID, payload, PAYLOADS)
+			com.sendQuickReply(userID, payload, PAYLOADS, true)
 			break;
 		default:
 			return new Error(`Invalid contentType received.`);

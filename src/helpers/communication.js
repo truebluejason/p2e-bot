@@ -1,8 +1,8 @@
 module.exports = {
   sendTextMessage: sendTextMessage,
+  sendLinkMessage: sendLinkMessage,
   sendButtonMessage: sendButtonMessage,
   sendQuickReply: sendQuickReply,
-  sendSubscriptionQuickReply: sendSubscriptionQuickReply,
   sendImageMessage: sendImageMessage,
   sendPtoEButton: sendPtoEButton,
   setProfileAPI: setProfileAPI
@@ -60,7 +60,7 @@ function queueOps(recipientId, messageData) {
   syncSendAPI(recipientId);
 }
 
-function sendTextMessage(recipientId, messageText) {
+function sendTextMessage(recipientId, messageText, subscriptionMsg = false) {
   var messageData = {
     recipient: {
       id: recipientId
@@ -69,6 +69,38 @@ function sendTextMessage(recipientId, messageText) {
       text: messageText,
     }
   };
+
+  if (subscriptionMsg) {
+    addSubscriptionTag(messageData);
+  }
+
+  queueOps(recipientId, messageData);
+}
+
+function sendLinkMessage(recipientId, messageText, url, subscriptionMsg = false) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "button",
+          text: messageText,
+          buttons: [{
+            type: "web_url",
+            url: url,
+            title: "Visit Site"
+          }]
+        }
+      }
+    }
+  };
+
+  if (subscriptionMsg) {
+    addSubscriptionTag(messageData);
+  }
 
   queueOps(recipientId, messageData);
 }
@@ -112,7 +144,7 @@ function sendButtonMessage(recipientId, buttonText, buttonObject) {
   "Choose Virtue": PAYLOADS["VIRTUE"]
 }
 */
-function sendQuickReply(recipientId, replyText, replyObject) {
+function sendQuickReply(recipientId, replyText, replyObject, subscriptionMsg = false) {
   var replyArray = Object.keys(replyObject).map(key => {
     return {
       "content_type": "text",
@@ -130,39 +162,14 @@ function sendQuickReply(recipientId, replyText, replyObject) {
     }
   };
 
-  queueOps(recipientId, messageData);
-}
-
-/* Input Format
-{
-  <TEXT>: <CUSTOM_PAYLOAD>,
-  "Choose Virtue": PAYLOADS["VIRTUE"]
-}
-*/
-function sendSubscriptionQuickReply(recipientId, replyText, replyObject) {
-  var replyArray = Object.keys(replyObject).map(key => {
-    return {
-      "content_type": "text",
-      "title": key,
-      "payload": replyObject[key]
-    }
-  });
-  var messageData = {
-    messaging_type: "MESSAGE_TAG",
-    tag: "NON_PROMOTIONAL_SUBSCRIPTION",
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      text: replyText,
-      quick_replies: replyArray
-    }
-  };
+  if (subscriptionMsg) {
+    addSubscriptionTag(messageData);
+  }
 
   queueOps(recipientId, messageData);
 }
 
-function sendImageMessage(recipientId, link) {
+function sendImageMessage(recipientId, link, subscriptionMsg = false) {
   var messageData = {
     recipient: {
       id: recipientId
@@ -177,7 +184,17 @@ function sendImageMessage(recipientId, link) {
     }
   };
 
+  if (subscriptionMsg) {
+    addSubscriptionTag(messageData);
+  }
+
   queueOps(recipientId, messageData);
+}
+
+
+function addSubscriptionTag(messageData) {
+  messageData['messaging_type'] = "MESSAGE_TAG"
+  messageData['tag'] = "NON_PROMOTIONAL_SUBSCRIPTION"
 }
 
 function sendPtoEButton(recipientId) {

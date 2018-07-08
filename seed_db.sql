@@ -14,7 +14,7 @@ CREATE TABLE Contents (
   ContentID INT AUTO_INCREMENT UNIQUE NOT NULL, 
   Type ENUM('Image','Link','Quote') NOT NULL, 
   Author VARCHAR(128),
-  Content VARCHAR(256) NOT NULL,
+  Content VARCHAR(256) UNIQUE NOT NULL,
   Priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
   PRIMARY KEY (ContentID)
 );
