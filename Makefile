@@ -1,3 +1,5 @@
+VERSION := 1.0.0
+
 db_user := root
 db_password := path2enlightenment
 db_name := P2E
@@ -5,6 +7,16 @@ server_port := 3000
 test_uid := 1411757238924436
 
 .DEFAULT_GOAL := help
+
+build:
+	docker build . -t p2e/p2e-bot:${VERSION}
+
+deploy:
+	docker tag p2e/p2e-bot:${VERSION} latest
+	docker push p2e/p2e-bot:${VERSION}
+	docker push p2e/p2e-bot:latest
+
+# docker run -d -p 3000:3000 -v /home/ec2-user/p2e-bot/production.json:/p2e-bot/config/production.json p2e/p2e-bot:latest
 
 debug:
 	node inspect index.js
@@ -47,7 +59,7 @@ setup_db:
 	$(MAKE) start_db
 	-mysqladmin -u ${db_user} password ${db_password} 2>/dev/null
 	mysql --user=${db_user} --password=${db_password} -e "CREATE DATABASE ${db_name};"
-	mysql --user=${db_user} --password=${db_password} ${db_name} < "./seed_db.sql"
+	mysql --user=${db_user} --password=${db_password} ${db_name} < "./scripts/seed_db.sql"
 	$(MAKE) stop_db
 
 start:
@@ -70,5 +82,3 @@ start_ngrok:
 stop_db:
 	brew services stop mysql
 
-test:
-	$(MAKE)

@@ -24,7 +24,7 @@ function syncSendAPI(recipientId) {
 
     let messageData = userQueue['messageQueue'].shift();
     let payload = {
-        uri: 'https://graph.facebook.com/v2.6/me/messages',
+        uri: 'https://graph.facebook.com/v3.0/me/messages',
         qs: { access_token: config.get('pageAccessToken') },
         method: 'POST',
         json: messageData
@@ -225,7 +225,7 @@ function sendPtoEButton(recipientId) {
 function setProfileAPI() {
   let successStatus;
   let payload = {
-    uri: `https://graph.facebook.com/v2.6/me/messenger_profile?access_token=${config.get('pageAccessToken')}`,
+    uri: `https://graph.facebook.com/v3.0/me/messenger_profile?access_token=${config.get('pageAccessToken')}`,
     method: 'POST',
     json: {
       get_started: {

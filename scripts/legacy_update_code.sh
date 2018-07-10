@@ -13,7 +13,7 @@ if [ -z "$BOT" ] && [ -z "$BACKGROUND" ]; then
 fi
 
 echo "Starting Update..."
-pushd ~/code 1>/dev/null
+pushd /code 1>/dev/null
 
 if [ -n "$BOT" ]; then
 	VERSION="$BOT"
