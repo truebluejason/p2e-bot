@@ -1,7 +1,7 @@
-VERSION := 1.0.0
+VERSION := ${VERSION}
 
 db_user := root
-db_password := path2enlightenment
+db_password := password
 db_name := P2E
 server_port := 3000
 test_uid := 1411757238924436
@@ -9,14 +9,17 @@ test_uid := 1411757238924436
 .DEFAULT_GOAL := help
 
 build:
-	docker build . -t p2e/p2e-bot:${VERSION}
+	[ -n "${VERSION}" ] # "Example Use: VERSION=1.0.0 make build"
+	docker build . -t truebluejason/p2e-bot:${VERSION}
 
 deploy:
-	docker tag p2e/p2e-bot:${VERSION} latest
-	docker push p2e/p2e-bot:${VERSION}
-	docker push p2e/p2e-bot:latest
+	[ -n "${VERSION}" ] # "Example Use: VERSION=1.0.0 make deploy"
+	docker tag truebluejason/p2e-bot:${VERSION} truebluejason/p2e-bot:latest
+	docker push truebluejason/p2e-bot:${VERSION}
+	docker push truebluejason/p2e-bot:latest
+	@echo "Image 'truebluejason/p2e-background' with versions '${VERSION}' and 'latest' pushed."
 
-# docker run -d -p 3000:3000 -v /home/ec2-user/p2e-bot/production.json:/p2e-bot/config/production.json p2e/p2e-bot:latest
+# docker run -d -p 3000:3000 -v /home/ec2-user/p2e-bot/production.json:/p2e-bot/config/production.json truebluejason/p2e-bot:latest
 
 debug:
 	node inspect index.js
