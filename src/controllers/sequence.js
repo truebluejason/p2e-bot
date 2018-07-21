@@ -41,7 +41,19 @@ const SEQUENCES = {
   },
   Greeting: {
     check: handlers.greeting.check,
-    send: handlers.greeting.send
+    send: handlers.greeting.send,
+    analyze: handlers.greeting.analyze,
+    nextSeqs: [ "TimezoneSet" ]
+  },
+  TimezoneUpdate: {
+    desc: "*update my timezone*: Update your timezone in my database.",
+    check: handlers.timezoneUpdate.check,
+    send: handlers.timezoneUpdate.send,
+    analyze: handlers.timezoneUpdate.analyze,
+    nextSeqs: [ "TimezoneSet" ]
+  },
+  TimezoneSet: {
+    send: handlers.timezoneSet.send
   },
   RemindGet: {
     desc: "*get reminders*: Get your previously set reminders.",

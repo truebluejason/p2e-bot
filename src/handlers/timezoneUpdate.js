@@ -9,19 +9,12 @@ const db = require('../helpers/database.js');
 const misc = require('../helpers/misc.js');
 
 function check(userResp) {
-	return userResp === 'GetStarted';
+	return userResp.match(/.*update my timezone.*/gi);
 }
 
 function send(userID, userResp) {
-	let {err} = db.createUser(userID);
-	if (err) return err;
-
-	let resp = db.setWaitState(userID, 'Greeting');
-	if (resp['err']) return resp['err'];
-	
-	let explain = "Welcome! I'm a bot that can assist your meditation by reminding you to practice and reflect on your progress.\n\n" +
-				"To get started, please let me know what time it is for you so I can determine your time zone.\n- _Example_: 'It is 8:00AM.'";
-	com.sendTextMessage(userID, explain);
+	let message = "What time is it for you?";
+	com.sendTextMessage(userID, message);
 	return null;
 }
 
@@ -30,14 +23,12 @@ function analyze(userID, userResp, nextSeqs) {
 	if (error) {
 		let msg = "The time you've given me is invalid. Please try again by typing '*update my timezone*'.";
 		com.sendTextMessage(userID, msg)
-		return {nextSeqName: null, error: new Error('Invalid time provided to Greeting')};
+		return {error: new Error('Invalid time provided to timezoneUpdate')};
 	}
 
 	let time = times[0];
-	console.log(`time is ${time}`)
 	let timeOffset = misc.getTimeOffset(time);
 
-	console.log(`updating userTimeZone with offset ${timeOffset}`)
 	error = db.updateUserTimezone(userID, timeOffset)['err'];
 	if (error) return {error: error};
 

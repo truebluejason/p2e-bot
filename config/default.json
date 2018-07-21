@@ -2,7 +2,7 @@
 	"appSecret": "b8c73a83acd93c87a59b98b2225ea661",
 	"db_host": "localhost",
 	"db_user": "root",
-	"db_password": "path2enlightenment",
+	"db_password": "password",
 	"db_name": "P2E",
     "pageAccessToken": "EAAF2hMVhPjoBAOTZBOF2dWcRMlvg0ZBlCd0GzA2TNqVEMPUvQSv95WuWlwH5Vtclt6j2P0asUkb4GzgVrRV4HOZAOtkG0R3gyZCXHhZC3lNmqB5vbP3OtlQDWirOAUkZBNEIzYiufwIJFhr68MTZBv3eLu8tX0ByTZAnaXyNV6yGqgZDZD",
     "port": "3000",

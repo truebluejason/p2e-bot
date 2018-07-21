@@ -2,6 +2,7 @@ module.exports = {
 	getWaitState: getWaitState,
 	setWaitState: setWaitState,
 	createUser: createUser,
+	updateUserTimezone: updateUserTimezone,
 	createCurrentEntry: createCurrentEntry,
 	updateCurrentEntry: updateCurrentEntry,
 	saveTimedOutEntry: saveTimedOutEntry,
@@ -21,7 +22,8 @@ UPDATE CurrentEntries SET Area = 'Faith' WHERE UserID = '111';
 */
 
 const
-	config = require('config'), 
+	config = require('config'),
+	misc = require('./misc'),
 	mysql = require('sync-mysql');
 
 let configObj = {
@@ -30,7 +32,6 @@ let configObj = {
   password: config.get('db_password'),
   database: config.get('db_name')
 };
-let tmpState = 'Default';
 
 // returns error and result
 function execSQL(sql, values) {
@@ -40,6 +41,7 @@ function execSQL(sql, values) {
 		result = con.query(sql, values);
 	} catch(error) {
 		err = error;
+		console.log(`[DB] Error message is ${err.message}`)
 	}
 	if (con instanceof mysql) con.dispose();
 	return {err: err, result: result};
@@ -51,7 +53,7 @@ function getWaitState(userID) {
 		values = [userID];
 
 	let {err, result} = execSQL(sql, values);
-	result = result[0] ? result[0]['State'] : 'NOUSER';
+	result = result && result[0] ? result[0]['State'] : 'NOUSER';
 	console.log(`[DEBUG] Retrieved WaitState '${result}' for User '${userID}'.`);
 	return {err: err, userState: result};
 }
@@ -68,6 +70,14 @@ function createUser(userID) {
 	let
 		sql = 'INSERT INTO Users(UserID, State) VALUES (?, "Default");',
 		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	return {err: err};
+}
+
+function updateUserTimezone(userID, timeOffset) {
+	let
+		sql = 'UPDATE Users SET Timezone = ? WHERE UserID = ?;'
+		values = [timeOffset, userID];
 	let {err, result} = execSQL(sql, values);
 	return {err: err};
 }
@@ -120,6 +130,7 @@ function getCurrentEntry(userID) {
 		sql = 'SELECT * FROM CurrentEntries WHERE UserID = ?;',
 		values = [userID];
 	let {err, result} = execSQL(sql, values);
+	if (!result) return {err: new Error('No current entry available.')}
 	return {err: err, result: result[0]};
 }
 
@@ -153,7 +164,7 @@ function reminderGet(userID) {
 		sql = 'SELECT Stamp FROM UserTimes WHERE UserID = ?;',
 		values = [userID];
 	let {err, result} = execSQL(sql, values);
-	result = result[0] ? result.map(obj => obj['Stamp']) : [];
+	result = result && result[0] ? result.map(obj => obj['Stamp']) : [];
 	if (err) return {err: err};
 
 	return {result: result};
@@ -161,11 +172,18 @@ function reminderGet(userID) {
 
 function reminderSet(userID, timesArray) {
 	let
-		sql = 'INSERT INTO UserTimes(UserID, Stamp) VALUES (?, ?);',
-		values,
-		resp;
+		sql = 'SELECT Timezone FROM Users WHERE UserID = ?;',
+		values = [userID];
+
+	let {err, result} = execSQL(sql, values);
+	if (err) return {err: err}
+
+	offset = result && result[0] ? result[0]['Timezone'] : false;
+	if (!offset) return { msg: "Please set your timezone first." }
+
+	sql = 'INSERT INTO UserTimes(UserID, Stamp, AdjustedStamp) VALUES (?, ?, ?);';
 	timesArray.forEach(time => {
-		values = [userID, time];
+		values = [userID, time, misc.adjustedTime(time, offset)];
 		resp = execSQL(sql, values);
 		if (resp['err']) return {err: resp['err']}
 	});

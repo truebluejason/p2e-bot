@@ -52,8 +52,6 @@ function send(userID, userResp) {
 			return new Error(`Invalid contentType received.`);
 	};
 
-	// USE THE FOLLOWING IN PRODUCTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//com.sendSubscriptionQuickReply(userID, message, PAYLOADS);
 	return null;
 }
 

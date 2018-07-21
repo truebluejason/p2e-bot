@@ -6,7 +6,14 @@ module.exports = {
 const com = require('../helpers/communication.js');
 const db = require('../helpers/database.js');
 
-const PAYLOADS = {Bliss: "Bliss", Clarity: "Clarity", Compassion: "Compassion", Contentment: "Contentment", Faith: "Faith"};
+const PAYLOADS = {
+	Bliss: "Bliss",
+	Clarity: "Clarity",
+	Compassion: "Compassion",
+	Contentment: "Contentment",
+	Faith: "Faith",
+	Honesty: "Honesty"
+};
 
 function send(userID, userResp) {
 	message = `Please choose a virtue to cultivate below.`

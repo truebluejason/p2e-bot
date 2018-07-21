@@ -7,7 +7,6 @@ const
 
 const
   com = require('./src/helpers/communication'),
-  db = require('./src/helpers/database'), // Remove soon?
   gateway = require('./src/controllers/gateway'),
   poll = require('./src/controllers/poll'),
   verification = require('./src/controllers/verification');

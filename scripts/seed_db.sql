@@ -3,11 +3,13 @@ CREATE TABLE Users (
   UserID VARCHAR(128) UNIQUE NOT NULL,
   State VARCHAR(128) NOT NULL,
   Name VARCHAR(128),
+  Timezone INT, # -12 to 12
   PRIMARY KEY (UserID)
 );
 CREATE TABLE UserTimes (
   UserID VARCHAR(128) NOT NULL, 
-  Stamp TIME, # HH:MM:SS
+  Stamp TIME, # HH:MM:SS AKA User's Time
+  AdjustedStamp TIME, # HH:MM:SS AKA Server's Time
   FOREIGN KEY (UserID) References Users(UserID)
 );
 CREATE TABLE Contents (
@@ -43,7 +45,7 @@ CREATE TABLE CurrentEntries (
 
 # Create Indexes
 CREATE INDEX UserIDX ON Users(UserID);
-CREATE INDEX StampIDX ON UserTimes(Stamp);
+CREATE INDEX StampIDX ON UserTimes(AdjustedStamp);
 CREATE INDEX ContentIDX ON Contents(ContentID);
 CREATE INDEX EntryIDX ON Entries(UserID);
 CREATE INDEX CurrentEntryIDX ON CurrentEntries(UserID);
@@ -53,7 +55,7 @@ ALTER TABLE UserTimes ADD CONSTRAINT UserId_Stamp UNIQUE(UserID, Stamp);
 
 # Create Test User
 INSERT INTO Users(UserID, State) VALUES ('111', 'Default');
-INSERT INTO UserTimes(UserID, Stamp) VALUES ('111', '08:00:00');
+INSERT INTO UserTimes(UserID, Stamp, AdjustedStamp) VALUES ('111', '08:00:00', 3);
 INSERT INTO Contents(Type, Author, Content) VALUES ('Quote', 'Buddha', 'The mind is everything. What you think you become.');
 INSERT INTO Contents(Type, Author, Content) VALUES ('Quote', 'Dogen', 'If you cannot find the truth right where you are, where else do you expect to find it?');
 INSERT INTO Contents(Type, Author, Content) VALUES ('Quote', 'Taisen Deshimaru', 'If you are not happy here and now, you never will be.');

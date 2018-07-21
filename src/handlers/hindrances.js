@@ -12,6 +12,7 @@ const PAYLOADS = {
 	Distaste: "Distaste",
 	Doubt: "Doubt",
 	Lethargy: "Lethargy",
+	Pride: "Pride",
 	Procrastination: "Procrastination"
 };
 

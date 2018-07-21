@@ -24,7 +24,3 @@ function send(userID, userResp) {
 	com.sendTextMessage(userID, `Reminder set at ${timesArray.reduce((resp, time) => resp + ' ' + time)}. See you then!`);
 	return null;
 }
-
-function analyze(userID, userResp, nextSeqs) {
-	return { nextSeqName: 'help', error: null };
-}
