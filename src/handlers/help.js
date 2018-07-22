@@ -6,7 +6,7 @@ module.exports = {
 const com = require('../helpers/communication.js');
 
 function check(userResp) {
-	return userResp.match('.*help.*');
+	return userResp.match(/.*help.*/i);
 }
 
 function send(userID, userResp) {

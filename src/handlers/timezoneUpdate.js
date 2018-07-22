@@ -9,7 +9,7 @@ const db = require('../helpers/database.js');
 const misc = require('../helpers/misc.js');
 
 function check(userResp) {
-	return userResp.match(/.*update my timezone.*/gi);
+	return userResp.match(/.*update my timezone.*/i);
 }
 
 function send(userID, userResp) {
