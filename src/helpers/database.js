@@ -7,6 +7,7 @@ module.exports = {
 	updateCurrentEntry: updateCurrentEntry,
 	saveTimedOutEntry: saveTimedOutEntry,
 	saveToEntry: saveToEntry,
+	responseGet: responseGet,
 	reminderGet: reminderGet,
 	reminderSet: reminderSet,
 	reminderQuit: reminderQuit
@@ -167,6 +168,29 @@ function reminderGet(userID) {
 	result = result && result[0] ? result.map(obj => obj['Stamp']) : [];
 	if (err) return {err: err};
 
+	return {result: result};
+}
+
+function responseGet(userID) {
+	let
+		sql = 'SELECT EntryDate, DoneStatus, Area, Plan, Remedy FROM Entries WHERE UserID = ? ORDER BY EntryDate DESC LIMIT 10;',
+		values = [userID];
+	let {err, result} = execSQL(sql, values);
+	if (err) return {err: err};
+
+	if (result && result[0]) {
+		result = result.map(obj => {
+			return {
+				EntryDate: obj['EntryDate'],
+				DoneStatus: obj['DoneStatus'],
+				Area: obj['Area'],
+				Plan: obj['Plan'],
+				Remedy: obj['Remedy']
+			};
+		});
+	} else {
+		result = [];
+	}
 	return {result: result};
 }
 

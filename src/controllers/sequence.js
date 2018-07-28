@@ -78,6 +78,11 @@ const SEQUENCES = {
   NotQuitted: {
     send: handlers.notQuitted.send
   },
+  ResponseGet: {
+    desc: "*get responses*: View 10 of your most recent reminder entries.",
+    check: handlers.responseGet.check,
+    send: handlers.responseGet.send
+  },
   Remind: {
     check: handlers.remind.check,
     send: handlers.remind.send,

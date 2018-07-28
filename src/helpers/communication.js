@@ -2,6 +2,7 @@ module.exports = {
   sendTextMessage: sendTextMessage,
   sendLinkMessage: sendLinkMessage,
   sendButtonMessage: sendButtonMessage,
+  sendTemplateMessage: sendTemplateMessage,
   sendQuickReply: sendQuickReply,
   sendImageMessage: sendImageMessage,
   sendPtoEButton: sendPtoEButton,
@@ -191,6 +192,25 @@ function sendImageMessage(recipientId, link, subscriptionMsg = false) {
   queueOps(recipientId, messageData);
 }
 
+// Refer to: https://developers.facebook.com/docs/messenger-platform/send-messages/template/generic
+function sendTemplateMessage(recipientId, templateArray) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: templateArray
+        }
+      }
+    }
+  };
+
+  queueOps(recipientId, messageData);
+}
 
 function addSubscriptionTag(messageData) {
   messageData['messaging_type'] = "MESSAGE_TAG"

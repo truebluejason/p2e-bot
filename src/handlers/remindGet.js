@@ -22,7 +22,3 @@ function send(userID, userResp) {
 	com.sendTextMessage(userID, `${intro}${formatted}\n\n${outro}`);
 	return null;
 }
-
-function analyze(userID, userResp, nextSeqs) {
-	return { nextSeqName: 'help', error: null };
-}
