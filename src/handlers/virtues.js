@@ -42,6 +42,9 @@ function analyze(userID, userResp, nextSeqs) {
 		case PAYLOADS["Faith"]:
 			focus = PAYLOADS["Faith"];
 			break;
+		case PAYLOADS["Honesty"]:
+			focus = PAYLOADS["Honesty"];
+			break;
 		default:
 			error = new Error(`Invalid quick reply answer for user ${userID}`);
 	}

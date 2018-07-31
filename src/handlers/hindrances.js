@@ -43,6 +43,9 @@ function analyze(userID, userResp, nextSeqs) {
 		case PAYLOADS["Lethargy"]:
 			focus = PAYLOADS["Lethargy"];
 			break;
+		case PAYLOADS["Pride"]:
+			focus = PAYLOADS["Pride"];
+			break;
 		case PAYLOADS["Procrastination"]:
 			focus = PAYLOADS["Procrastination"];
 			break;
